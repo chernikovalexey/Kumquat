@@ -1,0 +1,26 @@
+{
+   "browser_action": {
+      "default_icon": "ui/images/icons/icon_ui.png",
+      "popup": "window.html"
+   },
+
+   "content_scripts": [{
+      "css": [ "ui/styles/tooltip.css", "ui/styles/multi.css" ],
+      "js": [ "js/libs/prevel-light.js", "js/common.js", "js/tooltip.js" ],
+      "matches": [ "*://*/*" ]
+   }],
+
+   "default_title": "Instant Translate",
+   "description": "An instant translation of the highlighted text.",
+   "icons": {
+      "128": "ui/images/icons/icon128.png",
+      "16": "ui/images/icons/icon128.png",
+      "48": "ui/images/icons/icon128.png"
+   },
+   
+   "name": "Kumquat Ext",
+   "options_page": "options.html",
+   "permissions": [ "*://*/*", "contextMenus", "tabs" ],
+   
+   "version": "1.0.0"
+}
