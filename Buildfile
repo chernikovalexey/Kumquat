@@ -1,31 +1,33 @@
-name = Kumquat Ext;
-version = 1.0.0;
-description = Extensions development kit for Chrome;
+{
 
-icons = {
-  16:  'icon16.png',
-  48:  'icon48.png',
-  128: 'icon128.png'
-};
+  // What's different from standard Chrome manifest.json
+  "icons": {
+    "16": "icon16",
+    "48": "icon48",
+    "128": "icon128"
+  },
+  
+  "browser_action": {
+    "icon": "icon19",                   // optional
+    "default_title": "Open the window", // optional; shown in tooltip
+    "popup": true                       // optional
+  },
+  "page_action": {
+    "icon": "foo",              // optional
+    "title": "Open the window", // optional; shown in tooltip
+    "popup": true               // optional
+  },
+  "background_page": true,
+  "options_page": true,
+  
+  //
+  // Completely equal to manifest.json standard
+  
+  // Required
+  "name": "Kumquat Ext",
+  "version": "1.0",
 
-default_locale = en;
-browser_action = ;
-page_action = ;
-theme = ;
-app = ;
-background_page = pages/background.html;
-chrome_url_overrides = ;
-content_scripts = ;
-content_security_policy = ;
-file_browser_handlers = ;
-homepage_url = ;
-incognito = ;
-key = ;
-minimum_chrome_version = ;
-nacl_modules = ;
-offline_enabled = ;
-omnibox = ;
-options_page = ;
-permissions = ;
-plugins = ;
-requirements = ;
+  // Recommended
+  "description": "Browser extensions development kit for Chrome",
+  "default_locale": "en"
+}
