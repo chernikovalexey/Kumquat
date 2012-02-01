@@ -14,8 +14,6 @@
       l.log('log 2', 'Parsing build file..');
       
       callback(JSON.parse(f));
-      
-      l.log('log 3', 'OK.');
     });
   }
   
