@@ -5,18 +5,18 @@
 
 (function(undefined) {
   
-  // Constants
-  const SLASH = '/';
-  const DEF_RESOLUTION = '.js';
-  const COMMON_FOLDER = 'Common';            // Folder with autoloaded files
-  const HANDLERS_FOLDER = 'Handlers';        // Command handlers
-  const MAIN_FILE = 'Main' + DEF_RESOLUTION; // Core of each handler
-  
   // Must be global, because of a few files
   global.DIR = './';
   global.ROOT = '../';
   global.BUILD_FILE = DIR + ROOT + 'Buildfile';
   global.MANIFEST_FILE = DIR + ROOT + 'manifest.json';
+  global.DEF_RESOLUTION = '.js';
+  
+  // Constants
+  const SLASH = '/';
+  const COMMON_FOLDER = 'Common';            // Folder with autoloaded files
+  const HANDLERS_FOLDER = 'Handlers';        // Command handlers
+  const MAIN_FILE = 'Main' + DEF_RESOLUTION; // Core of each handler
   
   // =======================
   // Require necessary files
@@ -36,13 +36,12 @@
       }
       
       if(!~i.indexOf(DEF_RESOLUTION)) {
-        console.log('IOF:', i.indexOf(DEF_RESOLUTION));
         return;
       }
       
       global[i.replace(DEF_RESOLUTION, '')] = require(DIR + COMMON_FOLDER + SLASH + i);
-      
     });
+    
     ready[0] = true;
   });
   
