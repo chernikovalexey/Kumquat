@@ -3,7 +3,7 @@
  * Provides routing and executing Kumquat CL commands.
 **/
 
-(function(DIR, undefined) {
+(function(undefined) {
   
   // Constants
   const SLASH = '/';
@@ -13,6 +13,7 @@
   const MAIN_FILE = 'Main' + DEF_RESOLUTION; // Core of each handler
   
   // Must be global, because of a few files
+  global.DIR = './';
   global.ROOT = '../';
   global.BUILD_FILE = DIR + ROOT + 'Buildfile';
   global.MANIFEST_FILE = DIR + ROOT + 'manifest.json';
@@ -30,10 +31,17 @@
   // Every file from ./Common/ loads automatically
   fs.readdir(DIR + COMMON_FOLDER, function(err, f) {
     f.forEach(function(i, k) {
-      global[i.replace(DEF_RESOLUTION, '')] = require(DIR + COMMON_FOLDER + SLASH + i);
       if(f.length === k + 1) {
         ready[1] = true;
       }
+      
+      if(!~i.indexOf(DEF_RESOLUTION)) {
+        console.log('IOF:', i.indexOf(DEF_RESOLUTION));
+        return;
+      }
+      
+      global[i.replace(DEF_RESOLUTION, '')] = require(DIR + COMMON_FOLDER + SLASH + i);
+      
     });
     ready[0] = true;
   });
@@ -52,4 +60,4 @@
     require(DIR + HANDLERS_FOLDER + SLASH + action + SLASH + MAIN_FILE)[action](process.argv.splice(3));
   }
   
-})('./');
+})();

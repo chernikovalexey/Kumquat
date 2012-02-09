@@ -2,7 +2,7 @@
  * Converts Buildfile to standard Chrome manifest.json
 **/
 
-(function(DIR, undefined) {
+(function(undefined) {
     
   var pb = require(DIR + 'ParseBuild');
   var ts = require(DIR + 'ToStandard');
@@ -22,4 +22,4 @@
     });
   };
   
-})('./');
+})();

@@ -1,4 +1,4 @@
-(function(DIR, undefined) {
+(function(undefined) {
   
   var ok_props = 'title,default_title,matches'.split(',');
   var updated = (
@@ -116,4 +116,4 @@
   
   module.exports.substitute = substitute;
   
-})('./');
+})();
