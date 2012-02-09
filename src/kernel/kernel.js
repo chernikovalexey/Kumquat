@@ -25,7 +25,7 @@
     ext: {},      // object with user-created extensions
     db: {},       // 
     us: {},       // 
-    requests: {}  // 
+    cache: {}
   };
   
   for(var key in win.ke) {
@@ -141,7 +141,9 @@
     // Kernel storage
     kernel: {
       'const': {
-        STYLE_PREFIX: 's:'
+        STYLE_PREFIX: 's:',
+        KERNEL_DB: 'KE_Kernel',
+        CACHE_TABLE: 'Cache'
       },
       
       flags: {
@@ -167,16 +169,12 @@
   pl.extend(ke.data.kernel.info, {
     section: ke.data.kernel.info.url.match(/([A-z0-9]+)\.html/)[1]
   });
-  
+
   /* 
    * Public kernel functions
   **/
   
   pl.extend(ke, {
-    db: {},
-    us: {},
-    requests: {},
-    
     init: function() {
       // Flags
       ke.setFlagTrue('dom_loaded');
@@ -184,6 +182,12 @@
       // Fire functions
       ke.stack('run');
       ke.loadCurrentHub();
+      
+      // 
+      ke.db.choose(ke.getConst('KERNEL_DB'));
+      ke.db.execSql('SELECT * FROM ?', [ke.getConst('CACHE_TABLE')], null, function() {
+        ke.db.execSql('CREATE TABLE ' + ke.getConst('CACHE_TABLE') + ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, timestamp DATETIME, name VARCHAR(255), data TEXT)', [], null, null);
+      });
     },
     
     stack: function(flag, fn, args) {
@@ -214,6 +218,10 @@
     
     setFlagFalse: function(n) {
       ke.data.kernel.flags[n] = false;
+    },
+    
+    getConst: function(n) {
+      return ke.data.kernel['const'][n];
     },
     
     loadCurrentHub: function() {
@@ -255,7 +263,7 @@
    *  - Deleting db
   **/
   
-  pl.extend(ke.db, {   
+  pl.extend(ke.db, {
     choose: function(name, size) {
       ke.data.db.current = name;
       
@@ -327,8 +335,102 @@
       return ke.lib.getLength((ke.data.us.list[ke.data.us.current] || {}));
     },
     
+    empty: function() {
+      ke.data.us.list[ke.data.us.current] = [];
+    },
+    
     'delete': function() {
+      var c = ke.data.us.current;
+      ke.data.us.current = '';
       delete ke.data.us.list[ke.data.us.current];
+    }
+  });
+  
+  /* Module: cache
+   * 
+  **/
+  
+  // Data, at first
+  pl.extend(ke.data.cache, {
+    table: ke.getConst('CACHE_TABLE')
+  });
+  
+  pl.extend(ke.cache, {    
+    chooseDb: function() {
+      ke.db.choose(ke.getConst('KERNEL_DB'));
+    },
+    
+    save: function(n, msg) {
+      this.chooseDb();
+      ke.db.execSql(
+        'INSERT INTO ' + ke.data.cache.table + ' (timestamp, name, data) VALUES(?, ?, ?)', 
+        [Date.now(), n, msg],
+        null, null
+      );
+    },
+    
+    get: function(id, callback) {
+      this.chooseDb();
+      ke.db.execSql(
+        'SELECT * FROM ' + ke.data.cache.table + ' WHERE ' + (pl.type(id, 'str') ? 'name' : 'id') + ' = ? ORDER by id DESC',
+        [id],
+        function(tx, res) {
+          var r = [];
+          var len = res.rows.length;
+          for(var key = 0; key < len; ++key) {
+            r.push(res.rows.item(key));
+          }
+          
+          r = r.length === 1 ? r[0] : r;
+          callback(r);
+        },
+        null
+      );
+    },
+    
+    update: function(n, msg) {
+      this.chooseDb();
+      
+      ke.db.execSql(
+        'UPDATE ' + ke.data.cache.table + ' SET data = ? WHERE ' + (pl.type(n, 'str') ? 'name' : 'id') + ' = ?',
+        [msg, n],
+        null, null
+      );
+    },
+    
+    clean: function() {
+      this.chooseDb();
+      ke.db.execSql(
+        'DELETE FROM ' + ke.data.cache.table,
+        [],
+        null, null
+      );
+    },
+    
+    remove: function(id) {
+      this.chooseDb();
+      ke.db.execSql(
+        'DELETE FROM ' + ke.data.cache.table + ' WHERE ' + (pl.type(id, 'str') ? 'name' : 'id') + ' = ?',
+        [id],
+        null, null
+      );
+    },
+    
+    each: function(fn) {
+      this.chooseDb();
+      ke.db.execSql(
+        'SELECT * FROM ' + ke.data.cache.table + ' ORDER by id DESC',
+        [],
+        function(tx, res) {
+          var len = res.rows.length;
+          var d = null;
+          for(var key = 0; key < len; ++key) {
+            d = res.rows.item(key);
+            fn(d.name, d.data, d.id, d.timestamp);
+          }
+        },
+        null
+      );
     }
   });
   
@@ -349,7 +451,7 @@
       }
     }
   });
-  
+
   // Fire init when don loaded
   pl(ke.init);
   

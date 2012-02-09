@@ -6,7 +6,11 @@
     "48": "icon48",
     "128": "icon128"
   },
-  
+  "content_scripts": [{
+    "css": true,
+    "js": true,
+    "matches": ["*://*/*"]
+  }],
   "browser_action": {
     "icon": "icon19",                   // optional
     "default_title": "Open the window", // optional; shown in tooltip

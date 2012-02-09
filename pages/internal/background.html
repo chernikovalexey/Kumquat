@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html>
  <head>
+  <script>
+   var time = Date.now();
+   window.onload = function() {
+     console.log('Extension loaded in', Date.now() - time, 'ms');
+   };
+  </script>
   <script src="/src/lib/prevel.js"></script>
   <script src="/src/kernel/kernel.js"></script>
  </head>
