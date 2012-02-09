@@ -7,8 +7,8 @@
     }
     return args;
   }
-  
-  function log() {
+
+  module.exports.log = function() {
     // Object to an ordinary array
     arguments = argsToArray(arguments);
     
@@ -32,8 +32,6 @@
     }
     arguments.unshift(before);
     console.log.apply(console, arguments);
-  }
-  
-  module.exports.log = log;
+  };
   
 })();
