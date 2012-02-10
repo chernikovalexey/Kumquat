@@ -2,8 +2,12 @@
   
   const SRC_FOLDER = ROOT + 'src/';
   const HUB_FOLDER = SRC_FOLDER + 'hub/';
-  const HUB_TPL = DIR + 'Handlers/Create/Templates/Hub/';
+  const PATH_TO_TPL = DIR + 'Handlers/Create/Templates/';
+  const HUB_TPL = PATH_TO_TPL + 'Hub/js/';
   const TPL_RESOLUTION = '.txt';
+  const PUBLIC_PAGES = ROOT + 'pages/public/';
+  const PAGE_TPL = PATH_TO_TPL + 'Hub/html/new_page' + TPL_RESOLUTION;
+  const PAGES_RESOLUTION = '.html';
   
   var creators = {
     hub: function(n) {
@@ -21,6 +25,16 @@
               }
             });
           })
+        });
+      });
+      
+      //
+      // Create public html
+      fs.readFile(PAGE_TPL, 'utf-8', function(err, f) {
+        fs.writeFile(PUBLIC_PAGES + n + PAGES_RESOLUTION, f, function(err) {
+          if(err) {
+            Log.log('error', err);
+          }
         });
       });
     },

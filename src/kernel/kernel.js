@@ -25,7 +25,8 @@
     ext: {},      // object with user-created extensions
     db: {},       // 
     us: {},       // 
-    cache: {}
+    cache: {},
+    nav: {}
   };
   
   for(var key in win.ke) {
@@ -431,6 +432,18 @@
         },
         null
       );
+    }
+  });
+  
+  /* Module: nav
+   * 
+  **/
+  
+  pl.extend(ke.nav, {
+    go: function(pagename, delay) {
+      setTimeout(function() {
+        document.location = '/pages/public/' + pagename;
+      }, delay || 0);
     }
   });
   
