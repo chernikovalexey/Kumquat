@@ -1,0 +1,11 @@
+/* Kumquat Hub %name% Handlers
+ * 
+**/
+
+(function(undefined) {
+  
+  pl.extend(ke.app.handlers, {
+    
+  });
+  
+})();

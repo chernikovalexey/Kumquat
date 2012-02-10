@@ -2,7 +2,7 @@
   
   function getFolderContents(path, callback) {
     var q = [];
-    var ready = false;
+    var ready = [0];
     
     fs.readdir(path, function(err, f) {
       if(!f) {
@@ -14,18 +14,19 @@
         if(~i.indexOf(DEF_RESOLUTION)) {
           q.push(path + '/' + i);
         } else {
-          console.log(path + '/' + i);
+          ready.push(0);
           getFolderContents(path + '/' + i, function(n) {
             q = q.concat(n);
             q = q.unique();
+            ready.pop();
           });
         }
       });
-      ready = true;
+      ready.pop();
     });
     
     var int = setInterval(function() {
-      if(ready) {
+      if(Common.isEmpty(ready)) {
         callback(q);
         clearInterval(int);
       }
@@ -34,7 +35,7 @@
   
   module.exports.get = function(list, callback) {
     if(list === '*') {
-      var ready = false;
+      var ready = [0];
       list = [];
       
       fs.readdir('../src', function(err, f) {
@@ -42,21 +43,20 @@
           if(~i.indexOf(DEF_RESOLUTION)) {
             list.push(i);
           } else {
+            ready.push(0);
             getFolderContents('../src/' + i, function(n) {
-              console.log(n);
               list = list.concat(n);
               list = list.unique();
+              ready.pop();
             });
           }
         });
-        ready = true;
+        ready.pop();
       });
       
       var int = setInterval(function() {
-        if(ready) {
-          callback(list.map(function(e) {
-            return '../src/' + e;
-          }));
+        if(Common.isEmpty(ready)) {
+          callback(list);
           clearInterval(int);
         }
       }, 1);
