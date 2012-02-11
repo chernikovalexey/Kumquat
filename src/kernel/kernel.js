@@ -52,22 +52,35 @@
   })();
   
   pl.extend(ke.import, {
+    ready: [],
+    
     parseType: function(src) {
       src = src.replace(/\./g, '/');
-      return src.substring(0, 2) === 's:' ? 
+      return src.substring(0, 2) === ke.getConst('STYLE_PREFIX') ? 
         src.substring(2) + '.css' :
         src + '.js';
     },
     
     addRes: function(src) {
-      return (src.substr(src.length - 4) === '.css' ? '/resources/styles/' : '/src/') + src;
+      var prefix = '';
+      var slash = '/';
+      
+      if(src.substring(0, 5) === ke.getConst('ROOT_PREFIX')) {
+        prefix = ke.pathToExt;
+        slash  = '';
+        src    = src.substring(5);
+      }
+      
+      return prefix + (src.substr(src.length - 4) === '.css' ? slash + 'resources/styles/' : slash + 'src/') + src;
     },
     
     add: function(src, sub) {
       ke.setFlagTrue('import_works');
       
+      var root = src.substring(0, 5) === ke.getConst('ROOT_PREFIX');
+      
       src = ke.import.addRes( ke.import.parseType(src) );
-            
+      
       if(pl.type(sub, 'undef')) {
         var parts = src.split('/');
         sub = [parts.pop()];
@@ -79,30 +92,41 @@
         });
       }
       
-      var parent = src.split('/')[2];
+      var parent = src.split('/')[root ? 4 : 2];
       pl.each(sub, function(k, v) {
         if(~pl.inArray(v, ke.data.import.loaded)) {
           return;
         }
         
         if(ke.deploy[parent]) {
+          console.log('Deploy:', v.split('.')[0]);
           ke.deploy[parent](v.split('.')[0]);
         }
         
-        pl.attach({
-          url: src + v,
-          load: function(u) {            
-            ke.data.import.loaded.push(
-              !pl.empty(ke.data.import.queue_name) ? 
-                [ke.data.import.queue_name, u] : 
-                u
-            );
-            
-            if(k === sub.length - 1) {
-              ke.setFlagFalse('import_works');
+        ke.import.ready.push(0);
+        if(root) {
+          pl.ajax({
+            url: src + v,
+            type: 'GET',
+            success: function(data) {
+              window.eval(data);
+              ke.import.ready.pop();
             }
-          }
-        });
+          });
+        } else {
+          pl.attach({
+            url: src + v,
+            load: function(u) {            
+              ke.data.import.loaded.push(
+                !pl.empty(ke.data.import.queue_name) ? 
+                  [ke.data.import.queue_name, u] : 
+                  u
+              );
+              
+              ke.import.ready.pop();
+            }
+          });
+        }
       });
             
       return ke.import;
@@ -110,7 +134,7 @@
     
     onDone: function(callback) {
       var int = setInterval(function() {
-        if(!ke.getFlag('import_works')) {
+        if(pl.empty(ke.import.ready)) {
           clearInterval(int);
           callback();
         }
@@ -143,6 +167,7 @@
     kernel: {
       'const': {
         STYLE_PREFIX: 's:',
+        ROOT_PREFIX: 'root:',
         KERNEL_DB: 'KE_Kernel',
         CACHE_TABLE: 'Cache'
       },
@@ -155,20 +180,22 @@
       info: {
         url: document.location.href,
         ver: navigator.appVersion.match('Chrome/([0-9\.]+)')[1],
-        lang: navigator.language
+        lang: navigator.language,
+        id: chrome.i18n.getMessage('@@extension_id')
       },
       
       // Public kernel data
-      save: {}
+      save: {
+        stack: [],
+        internal_pages: ['content']
+      }
     }
   });
-  
-  pl.extend(ke.data.kernel.save, {
-    stack: []
-  });
-  
+    
   pl.extend(ke.data.kernel.info, {
-    section: ke.data.kernel.info.url.match(/([A-z0-9]+)\.html/)[1]
+    section: ke.data.kernel.info.url.match('chrome-extension://') ? 
+      ke.data.kernel.info.url.match(/([A-z0-9]+)\.html/)[1] : 
+      'content'
   });
 
   /* 
@@ -184,11 +211,13 @@
       ke.stack('run');
       ke.loadCurrentHub();
       
-      // 
+      // Deploy Kernel DB environment
       ke.db.choose(ke.getConst('KERNEL_DB'));
       ke.db.execSql('SELECT * FROM ?', [ke.getConst('CACHE_TABLE')], null, function() {
         ke.db.execSql('CREATE TABLE ' + ke.getConst('CACHE_TABLE') + ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, timestamp DATETIME, name VARCHAR(255), data TEXT)', [], null, null);
       });
+      
+      console.log('Section:', ke.section);
     },
     
     stack: function(flag, fn, args) {
@@ -209,6 +238,14 @@
       return ke.data.kernel.info.section;
     },
     
+    get extID() {
+      return ke.data.kernel.info.id;
+    },
+    
+    get pathToExt() {
+      return 'chrome-extension://' + ke.extID + '/';
+    },
+    
     getFlag: function(n) {
       return ke.data.kernel.flags[n];
     },
@@ -226,11 +263,12 @@
     },
     
     loadCurrentHub: function() {
-      ke.import('hub.' + ke.section + '.*', ['router', 'render', 'handlers']).onDone(function() {
+      var prefix = ~pl.inArray(ke.section, ke.data.kernel.save.internal_pages) ? 'root:' : '';
+      ke.import(prefix + 'hub.' + ke.section + '.*', ['router', 'render', 'handlers']).onDone(function() {       
         pl.each(ke.app.import || [], function(k, v) {
-          ke.import(v);
+          ke.import(prefix + v);
         });
-          
+        
         ke.app.init();
       });
     },

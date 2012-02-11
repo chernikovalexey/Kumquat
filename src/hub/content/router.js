@@ -5,12 +5,10 @@
 (function(undefined) {
   
   pl.extend(ke.app, {
-    import: [
-      'ext.log'
-    ],
+    import: [],
              
     init: function() {
-      console.log('App init.');
+      console.log('Content scripts initialized.');
     }
   });
   
