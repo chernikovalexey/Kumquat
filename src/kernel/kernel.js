@@ -99,7 +99,6 @@
         }
         
         if(ke.deploy[parent]) {
-          console.log('Deploy:', v.split('.')[0]);
           ke.deploy[parent](v.split('.')[0]);
         }
         
@@ -216,8 +215,6 @@
       ke.db.execSql('SELECT * FROM ?', [ke.getConst('CACHE_TABLE')], null, function() {
         ke.db.execSql('CREATE TABLE ' + ke.getConst('CACHE_TABLE') + ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, timestamp DATETIME, name VARCHAR(255), data TEXT)', [], null, null);
       });
-      
-      console.log('Section:', ke.section);
     },
     
     stack: function(flag, fn, args) {
