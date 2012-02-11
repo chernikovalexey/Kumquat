@@ -40,13 +40,13 @@
     },
     js: function() {
       return [
-        '/src/lib/prevel.js', '/src/kernel/kernel.js'
+        'src/lib/prevel.js', 'src/kernel/kernel.js'
       ];
     },
     css: function() {
       return [
-        '/resources/styles/pages/common/common.css', 
-        '/resources/styles/pages/internal/content.css'
+        'resources/styles/pages/common/main.css', 
+        'resources/styles/pages/internal/content.css'
       ];
     }
   };
