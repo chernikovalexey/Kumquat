@@ -1,4 +1,4 @@
-/* Kumquat Extension - %name%
+/* Kumquat Extension - %Name%
  * 
 **/
 

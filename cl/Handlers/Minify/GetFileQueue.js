@@ -11,7 +11,7 @@
       }
       
       f.forEach(function(i) {
-        if(~i.indexOf(DEF_RESOLUTION)) {
+        if(~i.indexOf(DEF_EXTENSION)) {
           q.push(path + '/' + i);
         } else {
           ready.push(0);
@@ -40,7 +40,7 @@
       
       fs.readdir('../src', function(err, f) {
         f.forEach(function(i) {
-          if(~i.indexOf(DEF_RESOLUTION)) {
+          if(~i.indexOf(DEF_EXTENSION)) {
             list.push(i);
           } else {
             ready.push(0);

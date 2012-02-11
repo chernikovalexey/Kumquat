@@ -30,6 +30,11 @@
     return Parent;
   };
   
+  module.exports.capitalize = function(str) {
+    str = str.toLowerCase();
+    return str[0].toUpperCase() + str.substring(1);
+  };
+  
   // ==========================
   // Extend internal JS objects
   

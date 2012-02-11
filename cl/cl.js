@@ -10,13 +10,19 @@
   global.ROOT = '../';
   global.BUILD_FILE = DIR + ROOT + 'Buildfile';
   global.MANIFEST_FILE = DIR + ROOT + 'manifest.json';
-  global.DEF_RESOLUTION = '.js';
+  global.DEF_EXTENSION = '.js';
+  global.SRC_FOLDER = ROOT + 'src/';
+  global.HUB_FOLDER = SRC_FOLDER + 'hub/';
+  global.TPL_EXTENSION = '.txt';
+  global.PUBLIC_PAGES = ROOT + 'pages/public/';
+  global.EXT_FOLDER = SRC_FOLDER + 'ext/';
+  global.PAGES_EXTENSION = '.html';
   
   // Constants
   const SLASH = '/';
   const COMMON_FOLDER = 'Common';            // Folder with autoloaded files
   const HANDLERS_FOLDER = 'Handlers';        // Command handlers
-  const MAIN_FILE = 'Main' + DEF_RESOLUTION; // Core of each handler
+  const MAIN_FILE = 'Main' + DEF_EXTENSION; // Core of each handler
   
   // =======================
   // Require necessary files
@@ -35,11 +41,11 @@
         ready[1] = true;
       }
       
-      if(!~i.indexOf(DEF_RESOLUTION)) {
+      if(!~i.indexOf(DEF_EXTENSION)) {
         return;
       }
       
-      global[i.replace(DEF_RESOLUTION, '')] = require(DIR + COMMON_FOLDER + SLASH + i);
+      global[i.replace(DEF_EXTENSION, '')] = require(DIR + COMMON_FOLDER + SLASH + i);
     });
     
     ready[0] = true;

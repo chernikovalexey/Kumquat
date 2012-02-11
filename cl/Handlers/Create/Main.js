@@ -1,13 +1,9 @@
 (function(undefined) {
   
-  const SRC_FOLDER = ROOT + 'src/';
-  const HUB_FOLDER = SRC_FOLDER + 'hub/';
   const PATH_TO_TPL = DIR + 'Handlers/Create/Templates/';
-  const HUB_TPL = PATH_TO_TPL + 'Hub/js/';
-  const TPL_RESOLUTION = '.txt';
-  const PUBLIC_PAGES = ROOT + 'pages/public/';
-  const PAGE_TPL = PATH_TO_TPL + 'Hub/html/new_page' + TPL_RESOLUTION;
-  const PAGES_RESOLUTION = '.html';
+  const HUB_TPL     = PATH_TO_TPL + 'Hub/js/';
+  const PAGE_TPL    = PATH_TO_TPL + 'Hub/html/new_page' + TPL_EXTENSION;
+  const EXT_TPL     = PATH_TO_TPL + 'Ext/ext' + TPL_EXTENSION;
   
   var creators = {
     hub: function(n) {
@@ -18,8 +14,8 @@
       fs.readdir(HUB_TPL, function(err, f) {
         f.forEach(function(i) {
           fs.readFile(HUB_TPL + i, 'utf-8', function(err, fc) {
-            fc = fc.replace(/%name%/g, n);
-            fs.writeFile(new_folder + i.replace(TPL_RESOLUTION, DEF_RESOLUTION), fc, function(err) {
+            fc = fc.replace(/%name%/g, Common.capitalize(n));
+            fs.writeFile(new_folder + i.replace(TPL_EXTENSION, DEF_EXTENSION), fc, function(err) {
               if(err) {
                 Log.log('error', err);
               }
@@ -31,7 +27,7 @@
       //
       // Create public html
       fs.readFile(PAGE_TPL, 'utf-8', function(err, f) {
-        fs.writeFile(PUBLIC_PAGES + n + PAGES_RESOLUTION, f, function(err) {
+        fs.writeFile(PUBLIC_PAGES + n + PAGES_EXTENSION, f, function(err) {
           if(err) {
             Log.log('error', err);
           }
@@ -40,7 +36,16 @@
     },
     
     ext: function(n) {
-      
+      fs.readFile(EXT_TPL, 'utf-8', function(err, f) {
+        f = f
+          .replace(/%Name%/g, Common.capitalize(n))  // Capitalize
+          .replace(/%name%/g, n);                    // Do not capitalize
+        fs.writeFile(EXT_FOLDER + n + DEF_EXTENSION, f, function(e) {
+          if(e) {
+            Log.log('error', e);
+          }
+        });
+      });
     }
   };
   
