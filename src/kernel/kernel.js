@@ -4,6 +4,8 @@
 
 (function(win, doc, undefined) {
   
+  // PRIVATE
+  
   // Common variables
   // Template for extending storages
   var ext_o_storage = {
@@ -13,6 +15,22 @@
   
   // Empty function
   var ef = function() {};
+  
+  // Common functions
+  var getObjectLength = function(o) {
+    if(pl.type(o, 'obj')) {
+      var l = 0;
+      for(var key in o) {
+        ++l;
+      }
+      return l;
+    } else {
+      return o.length;
+    }
+  };
+  
+  // ======
+  // PUBLIC
   
   // Extend window with `ke`
   // General structure of `ke`; 
@@ -403,7 +421,7 @@
     },
     
     length: function(n) {
-      return ke.lib.getLength((ke.data.us.list[ke.data.us.current] || {}));
+      return getObjectLength((ke.data.us.list[ke.data.us.current] || {}));
     },
     
     empty: function() {
@@ -517,24 +535,6 @@
     }
   });
   
-  /* Module: lib
-   * (a few useful functions)
-  **/
-  
-  pl.extend(ke.lib, {
-    getLength: function(o) {
-      if(pl.type(o, 'obj')) {
-        var l = 0;
-        for(var key in o) {
-          ++l;
-        }
-        return l;
-      } else {
-        return o.length;
-      }
-    }
-  });
-
   // Fire init when don loaded
   pl(ke.init);
   
