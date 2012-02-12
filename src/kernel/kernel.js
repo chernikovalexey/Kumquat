@@ -1,5 +1,11 @@
-/* Kumquat Ext Kernel
+/* Kumquat Kernel
  * 
+ * Copyright, 2012, Chernikov Alexey - http://github.com/chernikovalexey
+ * 
+ * Provides routing and managing of all in-extension processes,
+ * a few useful APIs, such as User-storage, Web SQL DB API Wrap, Cache.
+ * 
+ * For its proper work requires Prevel (http://github.com/chernikovalexey/Prevel).
 **/
 
 (function(win, doc, undefined) {
@@ -69,7 +75,8 @@
    *  - Organizing queues of files to be loaded;
    *  - Loading queue after Dom ready;
    *  - Supports .js and .css;
-   *  - Storing history of loaded files.
+   *  - Storing history of loaded files;
+   *  - Reacting with firing callback when queue is loaded.
   **/
   
   ke.import = (function() {
@@ -81,11 +88,13 @@
   pl.extend(ke.import, {
     ready: [],
     
+    // Prefix before the path to file (e.g. root:kernel.kernel)
     // Now root is the only supported prefix
     get prefix() {
       return ~pl.inArray(ke.section, ke.data.kernel.save.internal_pages) ? ke.getConst('ROOT_PREFIX') : '';
     },
     
+    // JS or CSS
     parseType: function(src) {
       src = src.replace(/\./g, '/');
       return src.substring(0, 2) === ke.getConst('STYLE_PREFIX') ? 
@@ -139,12 +148,17 @@
         }
         
         ke.import.ready.push(0);
+        
+        // Root access to files is needed when current section equals to 'content',
+        // so it is impossible to load js in the habitual way (they won't be content scripts,
+        // because Chrome allows to load content scripts from the manifest file only, 
+        // that's beforehand).
         if(root) {
           pl.ajax({
             url: src + v,
             type: 'GET',
             success: function(data) {
-              window.eval(data);
+              win.eval(data);
               ke.deploy[parent].after(v.split('.')[0], src.split('/').splice(-2, 1)[0]);
               ke.import.ready.pop();
             }
@@ -168,6 +182,7 @@
       return ke.import;
     },
     
+    // Optional for import: fire callback when everything is loaded
     onDone: function(callback) {
       var int = setInterval(function() {
         if(pl.empty(ke.import.ready)) {
@@ -177,6 +192,7 @@
       }, 1);
     },
     
+    // Loaded files as an array
     getLoaded: function() {
       return ke.data.import.loaded;
     }
@@ -199,6 +215,7 @@
   pl.extend(ke.data.us, ext_o_storage);
   
   pl.extend(ke.data, {
+    
     // Kernel storage
     kernel: {
       'const': {
@@ -213,7 +230,7 @@
       },
       
       info: {
-        url: document.location.href,
+        url: doc.location.href,
         ver: navigator.appVersion.match('Chrome/([0-9\.]+)')[1],
         lang: navigator.language,
         id: chrome.i18n.getMessage('@@extension_id')
@@ -233,14 +250,21 @@
       'content'
   });
 
-  /* 
-   * Public kernel functions
+  /* Public kernel functions and getters
+   * 
   **/
   
   pl.extend(ke, {
+    
+    // Main init
     init: function() {
       // Flags
       ke.setFlagTrue('dom_loaded');
+      
+      // Get and execute additional init
+      ke.import('kernel.init').onDone(function() {
+        ke.data.kernel.save.user_init();
+      });
       
       // Fire functions
       ke.stack('run');
@@ -250,10 +274,6 @@
       ke.db.choose(ke.getConst('KERNEL_DB'));
       ke.db.execSql('SELECT * FROM ?', [ke.getConst('CACHE_TABLE')], null, function() {
         ke.db.execSql('CREATE TABLE ' + ke.getConst('CACHE_TABLE') + ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, timestamp DATETIME, name VARCHAR(255), data TEXT)', [], null, null);
-      });
-      
-      ke.import('kernel.init').onDone(function() {
-        ke.data.kernel.save.user_init();
       });
     },
     
@@ -281,7 +301,7 @@
       return ke.data.kernel.info.id;
     },
     
-    // Where chrome.extension.getURL does not approach
+    // Where `chrome.extension.getURL` does not approach
     get pathToExt() {
       return 'chrome-extension://' + ke.extID + '/';
     },
@@ -290,6 +310,7 @@
       return ke.data.kernel.flags[n];
     },
     
+    // Create a new flag, if it does not exist
     createFlag: function(n, def_val) {
       if(pl.type(ke.data.kernel.flags[n], 'undef')) {
         ke.data.kernel.flags[n] = !pl.type(def_val, 'undef') ? def_val : false;
@@ -318,9 +339,9 @@
       });
     },
     
-    // Two variants which fires:
+    // Two variants which fires..:
     //  - before loading the script/style
-    //  - after its loaded
+    //  - after its loading
     deploy: {
       hub: {
         before: function(n) {
@@ -352,6 +373,7 @@
         }
       },
       
+      // UI is not ready yet, but let it be here...
       ui: {
         before: ef,
         after: ef
@@ -407,11 +429,28 @@
   });
   
   /* Module: us
+   * (instant type of storage based on objects)
    * 
+   * Provides:
+   *  - Selecting storage to work with;
+   *  - Pushing new data to the selected storage;
+   *  - Getting last element of the storage;
+   *  - Getting first element of the storage;
+   *  - Getting arbitrary element of the storage;
+   *  - Deleting it (storage).
   **/
   
   // Init the default storage - with an empty key
   ke.data.us.list[ke.data.us.current] = [];
+  
+  var _in = function(n, msg) {
+    if(pl.type(msg, 'undef')) {
+      msg = n;
+      n = ke.data.us.current;
+    }
+    ke.data.us.list[n] = ke.data.us.list[n] || [];
+    ke.data.us.list[n][this](msg);
+  };
   
   pl.extend(ke.us, {
     choose: function(n) {
@@ -431,13 +470,12 @@
       ke.us.choose(ke.data.us.cl.pop());
     },
     
-    push: function(n, msg) {
-      if(pl.type(msg, 'undef')) {
-        msg = n;
-        n = ke.data.us.current;
-      }
-      ke.data.us.list[n] = ke.data.us.list[n] || [];
-      ke.data.us.list[n].push(msg);
+    push: function() {
+      _in.apply('push', arguments);
+    },
+    
+    unshift: function() {
+      _in.apply('unshift', arguments);
     },
     
     pop: function(n) {
@@ -457,25 +495,41 @@
       return us[index === 'first' ? 0 : (index === 'last' ? us.length - 1 : index)] || null;
     },
     
+    pluck: function(n, from, to) {
+      return ke.data.us.list[n || ke.data.us.current].splice(from, pl.type(to, 'undef') ? 1 : to);
+    },
+    
+    each: function(n, fn) {
+      if(pl.type(fn, 'undef')) {
+        fn = n;
+        n = ke.data.us.current;
+      }
+      
+      var alias = ke.data.us.list[n]; // To prevent changes in `ke.data.us.list`
+      pl.each(alias.reverse(), function(k, v) {
+        fn(v, k);
+      });
+    },
+    
     length: function(n) {
       return getObjectLength((ke.data.us.list[n || ke.data.us.current] || {}));
     },
     
     empty: function(n) {
       ke.data.us.list[n || ke.data.us.current] = [];
-    },
-    
-    'delete': function(n) {
-      if(pl.type(n, 'undef')) {
-        n = ke.data.us.current;
-        ke.data.us.current = '';
-      }
-      delete ke.data.us.list[n];
     }
   });
   
   /* Module: cache
+   * (long-term cache based on Web SQL DB)
    * 
+   * Provides:
+   *  - Saving;
+   *  - Getting;
+   *  - Updating;
+   *  - Removing elements;
+   *  - Purging the whole cache;
+   *  - Going through the cache using `each`.
   **/
   
   // Data, at first
@@ -563,18 +617,21 @@
   });
   
   /* Module: nav
+   * (navigation between ordinary pages)
    * 
+   * Provides:
+   *  - Redirecting to the given page.
   **/
   
   pl.extend(ke.nav, {
     go: function(pagename, delay) {
       setTimeout(function() {
-        document.location = '/pages/public/' + pagename;
+        doc.location = '/pages/public/' + pagename;
       }, delay || 0);
     }
   });
   
-  // Fire init when don loaded
+  // Fire init when dom loaded
   pl(ke.init);
   
 })(this, document);

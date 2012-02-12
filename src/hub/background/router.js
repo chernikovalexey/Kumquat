@@ -1,14 +1,14 @@
-/*
+/* Kumquat Hub Background Router
  * 
 **/
 
 (function(undefined) {
   
   pl.extend(ke.app, {
-    import: ['ext.tpl'],
+    import: [],
              
     init: function() {
-      console.log('Background initialized.');
+      
     }
   });
   

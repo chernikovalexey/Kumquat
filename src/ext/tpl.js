@@ -1,5 +1,8 @@
 /* Kumquat Extension - Tpl
  * 
+ * Copyright: John Resig - http://ejohn.org/
+ * License: MIT
+ * Source: http://ejohn.org/blog/javascript-micro-templating
 **/
 
 (function(undefined) {

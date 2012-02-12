@@ -1,4 +1,4 @@
-/*
+/* Kumquat Hub Content Router
  * 
 **/
 
@@ -8,7 +8,7 @@
     import: [],
              
     init: function() {
-      console.log('Content scripts initialized.');
+      
     }
   });
   

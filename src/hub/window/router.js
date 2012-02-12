@@ -1,4 +1,4 @@
-/*
+/* Kumquat Hub Window Router
  * 
 **/
 
@@ -8,7 +8,7 @@
     import: [],
              
     init: function() {
-      console.log('Window initialized.');
+      
     }
   });
   

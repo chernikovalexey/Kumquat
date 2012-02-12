@@ -1,4 +1,4 @@
-/*
+/* Kumquat Hub Content Handlers
  * 
 **/
 

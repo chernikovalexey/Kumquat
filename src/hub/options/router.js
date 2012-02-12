@@ -1,4 +1,4 @@
-/*
+/* Kumquat Hub Options Router
  * 
 **/
 
@@ -8,7 +8,7 @@
     import: [],
              
     init: function() {
-      console.log('Options initialized.');
+      
     }
   });
   
