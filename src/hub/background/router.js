@@ -5,7 +5,7 @@
 (function(undefined) {
   
   pl.extend(ke.app, {
-    import: ['ext.standard.html'],
+    import: [],
              
     init: function() {
       console.log('Background initialized.');

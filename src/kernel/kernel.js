@@ -128,7 +128,7 @@
         }
         
         if(ke.deploy[parent]) {
-          ke.deploy[parent].before(v.split('.')[0]);
+          ke.deploy[parent].before(v.split('.')[0], src.split('/').splice(-2, 1)[0]);
         } else {
           // Define as an empty function, because it will fired a bit later
           // (to prevent errors)
@@ -142,7 +142,7 @@
             type: 'GET',
             success: function(data) {
               window.eval(data);
-              ke.deploy[parent].after(v.split('.')[0]);
+              ke.deploy[parent].after(v.split('.')[0], src.split('/').splice(-2, 1)[0]);
               ke.import.ready.pop();
             }
           });
@@ -155,7 +155,7 @@
                   [ke.data.import.queue_name, u] : 
                   u
               );
-              ke.deploy[parent].after(v.split('.')[0]);
+              ke.deploy[parent].after(v.split('.')[0], src.split('/').splice(-2, 1)[0]);
               ke.import.ready.pop();
             }
           });
@@ -325,12 +325,17 @@
       },
       
       ext: {
-        before: function(n) {
-          ke.ext[n] = {};
+        before: function(n, prev) {
+          if(prev !== 'ext') {
+            ke.ext[prev] = ke.ext[prev] || {};
+            ke.ext[prev][n] = {};
+          } else {
+            ke.ext[n] = {};
+          }
         },
         
-        after: function(n) {
-          pl.each(ke.ext[n].import || [], function(k, v) {
+        after: function(n, prev) {
+          pl.each((ke.ext[prev] ? ke.ext[prev][n].import : ke.ext[n].import) || [], function(k, v) {
             ke.import(v);
           });
         }
