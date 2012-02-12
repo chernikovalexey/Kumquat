@@ -54,6 +54,11 @@
   pl.extend(ke.import, {
     ready: [],
     
+    // Now root is the only supported prefix
+    get prefix() {
+      return ~pl.inArray(ke.section, ke.data.kernel.save.internal_pages) ? ke.getConst('ROOT_PREFIX') : '';
+    },
+    
     parseType: function(src) {
       src = src.replace(/\./g, '/');
       return src.substring(0, 2) === ke.getConst('STYLE_PREFIX') ? 
@@ -76,6 +81,8 @@
     
     add: function(src, sub) {
       ke.setFlagTrue('import_works');
+      
+      src = ke.import.prefix + src;
       
       var root = src.substring(0, 5) === ke.getConst('ROOT_PREFIX');
       
@@ -135,7 +142,7 @@
       var int = setInterval(function() {
         if(pl.empty(ke.import.ready)) {
           clearInterval(int);
-          callback();
+          callback && callback();
         }
       }, 1);
     },
@@ -215,6 +222,10 @@
       ke.db.execSql('SELECT * FROM ?', [ke.getConst('CACHE_TABLE')], null, function() {
         ke.db.execSql('CREATE TABLE ' + ke.getConst('CACHE_TABLE') + ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, timestamp DATETIME, name VARCHAR(255), data TEXT)', [], null, null);
       });
+      
+      ke.import('kernel.init').onDone(function() {
+        ke.data.kernel.save.user_init();
+      });
     },
     
     stack: function(flag, fn, args) {
@@ -260,10 +271,9 @@
     },
     
     loadCurrentHub: function() {
-      var prefix = ~pl.inArray(ke.section, ke.data.kernel.save.internal_pages) ? 'root:' : '';
-      ke.import(prefix + 'hub.' + ke.section + '.*', ['router', 'render', 'handlers']).onDone(function() {       
-        pl.each(ke.app.import || [], function(k, v) {
-          ke.import(prefix + v);
+      ke.import('hub.' + ke.section + '.*', ['router', 'render', 'handlers']).onDone(function() {       
+        pl.each(ke.app.import, function(k, v) {
+          ke.import(v);
         });
         
         ke.app.init();
@@ -274,6 +284,7 @@
       hub: function(n) {
         if(n === 'router') {
           pl.extend(ke.app, {
+            import: [],    // It won't be overridden, if it's defined
             render: {},    // Attach events, organize ui
             handlers: {},  // Function called by events, render
           });
