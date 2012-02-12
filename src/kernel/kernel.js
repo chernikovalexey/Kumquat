@@ -5,10 +5,14 @@
 (function(win, doc, undefined) {
   
   // Common variables
+  // Template for extending storages
   var ext_o_storage = {
     current: '',
     list: {}
   };
+  
+  // Empty function
+  var ef = function() {};
   
   // Extend window with `ke`
   // General structure of `ke`; 
@@ -106,7 +110,11 @@
         }
         
         if(ke.deploy[parent]) {
-          ke.deploy[parent](v.split('.')[0]);
+          ke.deploy[parent].before(v.split('.')[0]);
+        } else {
+          // Define as an empty function, because it will fired a bit later
+          // (to prevent errors)
+          ke.deploy[parent] = {after: ef};
         }
         
         ke.import.ready.push(0);
@@ -116,6 +124,7 @@
             type: 'GET',
             success: function(data) {
               window.eval(data);
+              ke.deploy[parent].after(v.split('.')[0]);
               ke.import.ready.pop();
             }
           });
@@ -128,7 +137,7 @@
                   [ke.data.import.queue_name, u] : 
                   u
               );
-              
+              ke.deploy[parent].after(v.split('.')[0]);
               ke.import.ready.pop();
             }
           });
@@ -272,31 +281,46 @@
     
     loadCurrentHub: function() {
       ke.import('hub.' + ke.section + '.*', ['router', 'render', 'handlers']).onDone(function() {       
-        pl.each(ke.app.import, function(k, v) {
+        pl.each(ke.app.import || [], function(k, v) {
           ke.import(v);
         });
         
         ke.app.init();
       });
     },
-        
+    
+    // Two variants which fires:
+    //  - before loading the script/style
+    //  - after its loaded
     deploy: {
-      hub: function(n) {
-        if(n === 'router') {
-          pl.extend(ke.app, {
-            import: [],    // It won't be overridden, if it's defined
-            render: {},    // Attach events, organize ui
-            handlers: {},  // Function called by events, render
+      hub: {
+        before: function(n) {
+          if(n === 'router') {
+            pl.extend(ke.app, {
+              render: {},    // Attach events, organize ui
+              handlers: {},  // Function called by events, render
+            });
+          }
+        },
+        
+        after: ef
+      },
+      
+      ext: {
+        before: function(n) {
+          ke.ext[n] = {};
+        },
+        
+        after: function(n) {
+          pl.each(ke.ext[n].import || [], function(k, v) {
+            ke.import(v);
           });
         }
       },
       
-      ext: function(n) {
-        ke.ext[n] = {};
-      },
-      
-      ui: function(n) {
-        
+      ui: {
+        before: ef,
+        after: ef
       }
     }
   });

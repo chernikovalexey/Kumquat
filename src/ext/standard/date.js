@@ -5,7 +5,7 @@
 (function(undefined) {
   
   pl.extend(ke.ext.date, {
-    import: []
+    
   });
   
 })();
