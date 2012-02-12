@@ -5,7 +5,7 @@
 (function(undefined) {
   
   pl.extend(ke.app, {
-    import: [],
+    import: ['ext.tpl'],
              
     init: function() {
       console.log('Background initialized.');

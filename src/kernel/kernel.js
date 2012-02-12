@@ -10,13 +10,19 @@
   // Template for extending storages
   var ext_o_storage = {
     current: '',
+    cl: [],
     list: {}
   };
   
   // Empty function
   var ef = function() {};
   
+  // Do not create separate data storage for them
+  var excludes = 'data,ext,ui'.split(',');
+  
   // Common functions
+  // Length of the given object
+  // Examples: getObjectLength({a: 2, b: 3}) => 2
   var getObjectLength = function(o) {
     if(pl.type(o, 'obj')) {
       var l = 0;
@@ -36,23 +42,22 @@
   // General structure of `ke`; 
   // perhaps, some properties will be reassigned
   win.ke = {
-    data: {},     // data container
+    data: {},     // Data container
     
-    app: {},      // object with mvc of the current hub
-    ui: {},       //
+    app: {},      // Object with mvc of the current hub
+    ui: {},       // User-Interface
     
-    import: {},   // import given script/style
+    import: {},   // Import given script/style
     
-    lib: {},      // Computes length of the object
-    ext: {},      // object with user-created extensions
-    db: {},       // 
-    us: {},       // 
-    cache: {},
-    nav: {}
+    ext: {},      // Object with user-created extensions
+    db: {},       // Wrapper for Web SQL DB API
+    us: {},       // User-storage with objects
+    cache: {},    // Kumquat Cache API
+    nav: {}       // Navigation on ordinary pages
   };
   
   for(var key in win.ke) {
-    if(key !== 'data') {
+    if(!~pl.inArray(key, excludes)) {
       ke.data[key] = {};
     }
   }
@@ -63,7 +68,7 @@
    * Provides:
    *  - Organizing queues of files to be loaded;
    *  - Loading queue after Dom ready;
-   *  - Support .js and .css;
+   *  - Supports .js and .css;
    *  - Storing history of loaded files.
   **/
   
@@ -102,8 +107,6 @@
     },
     
     add: function(src, sub) {
-      ke.setFlagTrue('import_works');
-      
       src = ke.import.prefix + src;
       
       var root = src.substring(0, 5) === ke.getConst('ROOT_PREFIX');
@@ -206,8 +209,7 @@
       },
       
       flags: {
-        dom_loaded: false,
-        import_works: false
+        dom_loaded: false
       },
       
       info: {
@@ -255,6 +257,8 @@
       });
     },
     
+    // Functions which should be fired after dom loaded
+    // Note: FIFO type of storing
     stack: function(flag, fn, args) {
       args = args || [];
       args = args.shift ? args : [args];
@@ -277,12 +281,19 @@
       return ke.data.kernel.info.id;
     },
     
+    // Where chrome.extension.getURL does not approach
     get pathToExt() {
       return 'chrome-extension://' + ke.extID + '/';
     },
     
     getFlag: function(n) {
       return ke.data.kernel.flags[n];
+    },
+    
+    createFlag: function(n, def_val) {
+      if(pl.type(ke.data.kernel.flags[n], 'undef')) {
+        ke.data.kernel.flags[n] = !pl.type(def_val, 'undef') ? def_val : false;
+      }
     },
     
     setFlagTrue: function(n) {
@@ -399,44 +410,67 @@
    * 
   **/
   
+  // Init the default storage - with an empty key
+  ke.data.us.list[ke.data.us.current] = [];
+  
   pl.extend(ke.us, {
     choose: function(n) {
       if(pl.type(ke.data.us.list[n], 'undef')) {
         ke.data.us.list[n] = [];
       }
-      
+      ke.data.us.cl.push(n);
       ke.data.us.current = n;
     },
     
-    push: function(msg) {
-      ke.data.us.list[ke.data.us.current].push(msg);
+    // Default key = empty key
+    chooseDefault: function() {
+      ke.us.choose('');
     },
     
-    pop: function() {
-      return ke.data.us.list[ke.data.us.current].pop();
+    choosePrev: function() {
+      ke.us.choose(ke.data.us.cl.pop());
     },
     
-    shift: function() {
-      return ke.data.us.list[ke.data.us.current].shift();
+    push: function(n, msg) {
+      if(pl.type(msg, 'undef')) {
+        msg = n;
+        n = ke.data.us.current;
+      }
+      ke.data.us.list[n] = ke.data.us.list[n] || [];
+      ke.data.us.list[n].push(msg);
     },
     
-    get: function(index) {
-      var us = ke.data.us.list[ke.data.us.current];
+    pop: function(n) {
+      return ke.data.us.list[n || ke.data.us.current].pop();
+    },
+    
+    shift: function(n) {
+      return ke.data.us.list[n || ke.data.us.current].shift();
+    },
+    
+    get: function(n, index) {
+      if(pl.type(index, 'undef')) {
+        index = n;
+        n = ke.data.us.current;
+      }
+      var us = ke.data.us.list[n];
       return us[index === 'first' ? 0 : (index === 'last' ? us.length - 1 : index)] || null;
     },
     
     length: function(n) {
-      return getObjectLength((ke.data.us.list[ke.data.us.current] || {}));
+      return getObjectLength((ke.data.us.list[n || ke.data.us.current] || {}));
     },
     
-    empty: function() {
-      ke.data.us.list[ke.data.us.current] = [];
+    empty: function(n) {
+      ke.data.us.list[n || ke.data.us.current] = [];
     },
     
-    'delete': function() {
-      var c = ke.data.us.current;
-      ke.data.us.current = '';
-      delete ke.data.us.list[ke.data.us.current];
+    'delete': function(n) {
+      if(pl.type(n, 'undef')) {
+        n = ke.data.us.current;
+        ke.data.us.current = '';
+      }
+      delete ke.data.us.list[n];
     }
   });
   
