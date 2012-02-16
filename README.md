@@ -21,3 +21,15 @@ __How-to create new module example:__
 cd path/to/Kumquat/cl
 node cl.js create hub translator
 ```
+
+###File structure
+
+* __[cl/](https://github.com/chernikovalexey/Kumquat/tree/master/cl)__ - Command Line API;
+
+* __[pages/](https://github.com/chernikovalexey/Kumquat/tree/master/pages)__ - All html files;
+
+* __[resources/](https://github.com/chernikovalexey/Kumquat/tree/master/resources)__ - Styles and images;
+
+* __[src/](https://github.com/chernikovalexey/Kumquat/tree/master/src)__ - All JavaScript code of the client side;
+
+* __[Buildfile](https://github.com/chernikovalexey/Kumquat/blob/master/Buildfile)__ - it's an analogue of standard Chrome's manifest.json, but with a few correction aimed on simplifying.
