@@ -1,4 +1,4 @@
-#How to use Kumquat
+#How to use Kumquat?
 
 All html files are in `/pages/`. It's separated into two directories: `internal` and `public`. The first one stores
 html, related to background processes, the second stores all public files, which will be available from the browser. 
@@ -122,3 +122,54 @@ It has the following structure:
   
 })();
 ```
+
+---
+
+##Additional step: write extensions or modules
+
+Extensions are single js files in `/src/ext/` which can be included to any hub. This is the only "legal" 
+(within Kumquat, had in mind) way to provide common functionality for a few hubs at the same time.
+
+Modules are the same extensions but placed in directories. E.g. if we have a module named "parser", it has 
+its separate directory - `/src/ext/parser/`, where there should be single js files.
+
+[Command Line](https://github.com/chernikovalexey/Kumquat/blob/master/documentation/CommandLine.md) allows creating 
+alike modules, and extensions.
+
+Extension template has the following structure:
+
+```javascript
+/* Kumquat Extension - extension_you_have_created_name
+ *
+**/
+
+(function(undefined) {
+  
+  pl.extend(ke.ext.extension_you_have_created_name, {
+    import: [] // If extension requires some css or unattached (yet) js
+    
+    // Your methods are here...
+  });
+  
+})();
+```
+
+BUT: if you created a module, it will have the following structure:
+
+```javascript
+/* Kumquat Extension - module_you_have_created_name.ext
+ *
+**/
+
+(function(undefined) {
+  
+  pl.extend(ke.ext.module_you_have_created_name.ext, {
+    import: [] // Import js/css, if necessary
+    
+    // Your methods are here...
+  });
+  
+})();
+```
+
+So, module, roughly speaking, is just an additional namespace (what's convenient when module is complicated).
