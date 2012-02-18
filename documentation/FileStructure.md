@@ -6,23 +6,23 @@ release and archiving it) through the command line. Precisely.
 
 __Tree:__
 
-* __/cl/__ - command line API
-  * __./Common/__ - common functions of CL, used everywhere (within CL)
-  * __./Handlers/__ - commands handlers
-  * __./cl.js__ - router (exactly, it's being called from command line)
+* [__/cl/__](https://github.com/chernikovalexey/Kumquat/tree/master/cl) - command line API
+  * [__./Common/__](https://github.com/chernikovalexey/Kumquat/tree/master/cl/Common) - common functions of CL, used everywhere (within CL)
+  * [__./Handlers/__](https://github.com/chernikovalexey/Kumquat/tree/master/cl/Handlers) - commands handlers
+  * [__./cl.js__](https://github.com/chernikovalexey/Kumquat/tree/master/cl/cl.js) - router (exactly, it's being called from command line)
 
-* __/resources/__ - static files, related to design
-  * __./images/__ - images, icons
-    * __./icons/__ - icons only
-  * __./styles/__ - css styles
+* [__/resources/__](https://github.com/chernikovalexey/Kumquat/tree/master/resources) - static files, related to design
+  * [__./images/__](https://github.com/chernikovalexey/Kumquat/tree/master/resources/images) - images, icons
+    * [__./icons/__](https://github.com/chernikovalexey/Kumquat/tree/master/resources/images/icons) - icons only
+  * [__./styles/__](https://github.com/chernikovalexey/Kumquat/tree/master/resources/styles) - css styles
   
-* __/pages/__ - html files
-  * __./internal/__ - html, which represents extension's background processes
-  * __./public/__ - html, which will be available through the browser window
+* [__/pages/__](https://github.com/chernikovalexey/Kumquat/tree/master/pages) - html files
+  * [__./internal/__](https://github.com/chernikovalexey/Kumquat/tree/master/pages/internal) - html, which represents extension's background processes
+  * [__./public/__](https://github.com/chernikovalexey/Kumquat/tree/master/pages/public) - html, which will be available through the browser window
   
-* __/src/__ - js files
-  * __./kernel/__ - kernel files; routing, initialising
-  * __./ext/__ - modules and extensions
-  * __./ui/__ - UI elements
-  * __./hub/__ - MVC srtucture for `../pages/public/`
-  * __./lib/__ - external libraries used in Kumquat
+* [__/src/__](https://github.com/chernikovalexey/Kumquat/tree/master/src) - js files
+  * [__./kernel/__](https://github.com/chernikovalexey/Kumquat/tree/master/src/kernel) - kernel files; routing, initialising
+  * [__./ext/__](https://github.com/chernikovalexey/Kumquat/tree/master/src/ext) - modules and extensions
+  * [__./ui/__](https://github.com/chernikovalexey/Kumquat/tree/master/src/ui) - UI elements
+  * [__./hub/__](https://github.com/chernikovalexey/Kumquat/tree/master/src/hub) - MVC srtucture for `../pages/public/`
+  * [__./lib/__](https://github.com/chernikovalexey/Kumquat/tree/master/src/lib) - external libraries used in Kumquat
