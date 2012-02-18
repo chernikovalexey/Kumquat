@@ -80,3 +80,45 @@ If your hub requires some css or js, you should declare it in `import`, then fil
 
 This code will log "Initialised!" when DOM loaded and attach `/src/lib/prevel.js`, `/src/kernel/kernel.js` and 
 `/resources/styles/pages/common/main.css` to the document.
+
+__render.js:__
+
+It just stores functions for organising page (e.g. remove some elements) and attaching events separately. 
+These functions should be fired in router init.
+
+It has the following structure:
+
+```javascript
+/* Kumquat Hub hub_you_have_created_name Render
+ * 
+**/
+
+(function(undefined) {
+  
+  pl.extend(ke.app.render, {
+    organize: {}, // Organise page
+    events: {}    // Attach events
+  });
+  
+})();
+```
+
+__handlers.js:__
+
+It stores all kinds of handlers for events attached with __render.js__. It made just to divide attaching and handling.
+
+It has the following structure:
+
+```javascript
+/* Kumquat Hub hub_you_have_created_name Handlers
+ * 
+**/
+
+(function(undefined) {
+  
+  pl.extend(ke.app.handlers, {
+    // Functions...
+  });
+  
+})();
+```
