@@ -1,4 +1,4 @@
-/* Prevel Library v1.2.1
+/* Prevel Library v1.2.7
  * http://github.com/chernikovalexey/Prevel
  * 
  * Copyright 2011-2012, Alexey Chernikov
@@ -163,7 +163,18 @@
       }
     },
     
-    inArray: function(a, c, b, r){
+    // Moved from Core Extension
+    filter: function(array, reservation) {
+      var output = [];
+      pl.each(array, function(k, val) {
+        if(reservation(val)) {
+          output.push(val);
+        }
+      });
+      return output;
+    },
+    
+    inArray: function(a, c, b, r) {
       if(indexOf) return c.indexOf(a, b);
       for(b = b > 0 || -1, r = -1; ++b < c.length && !~r; r = c[b] === a ? b : r);
       return r;
@@ -195,106 +206,6 @@
   
   // Add `pl` to the global scope
   win.pl = pl;
-  
-})();
-
-/* Module: Ajax.js
- * Requirements: Core.js
-**/
-
-(function() {
-  
-  pl.extend({
-    // Convert object to a 'param-string'
-    toParams: function(o) {
-      var pieces = [];
-      for(var key in o) {
-        pieces.push(
-          encodeURIComponent(key) + '=' + encodeURIComponent(o[key])
-        );
-      }
-      return pieces.join('&');
-    },
-    
-    ajax: function(params) {
-      var Request;
-      var requestPrepare = function() {
-        if(win.XMLHttpRequest) { // Modern browsers
-          Request = new XMLHttpRequest();
-          
-          if(Request.overrideMimeType) {
-            Request.overrideMimeType('text/html');
-          }
-        } else if(win.ActiveXObject) { // Obsolete IE
-          try {
-            Request = new ActiveXObject('Msxml2.XMLHTTP');
-          } catch(e) {
-            try {
-              Request = new ActiveXObject('Microsoft.XMLHTTP');
-            } catch(er) {}
-          }
-        }
-        
-        if(!Request) {
-          pl.error('Could not create a XMLHttpRequest instance.');
-        }
-        
-        // Fix related with `attachEvent`
-        Request.onreadystatechange = function(e) {
-          if(Request.readyState === 1) {
-            (params.load || ef)();
-          } else if(Request.readyState === 4) {
-            if(Request.status > 199 && Request.status < 300) {
-              (params.success || ef)(
-                params.dataType === 'json' ? // Parse JSON if necessary
-                  pl.JSON(Request.responseText) : 
-                  Request.responseText,
-                Request.status
-              );
-            } else {
-              (params.error || ef)(Request.status, Request.responseText);
-            }
-          }
-          
-          params.always = params.always || ef;
-          
-          try {
-            params.always(Request.readyState, Request.status, Request.responseText);
-          } catch(e) {
-            params.always(Request.readyState);
-          }
-        };
-      };
-      
-      // Common headers
-      var headers = function(type) {
-        // To identify that it's XHR
-        Request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        
-        if(type) {
-          Request.setRequestHeader(
-            'Content-type', 
-            'application/x-www-form-urlencoded; charset=' + 
-            (params.charset || 'utf-8')
-          );
-        }
-      };
-      
-      params.data  = pl.toParams(params.data || {});
-      params.async = params.async || true;
-      requestPrepare();
-      
-      if(params.type === 'POST') {
-        Request.open('POST', params.url, params.async);
-        headers(1);
-        Request.send(params.data);
-      } else {
-        Request.open('GET', params.url + '?' + params.data, params.async);
-        headers();
-        Request.send(n);
-      }
-    }
-  });
   
 })();
 
@@ -418,6 +329,163 @@
     }
   });
 
+})();
+
+/* Module: Css.js
+ * Requirements: Core.js, Manipulate.js
+**/
+
+(function() {
+  
+  pl.extend({
+    camelCase: function(str) {
+      if(!str.match('-')) return str;
+      var parts = str.split('-');
+      return parts[0] + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);  
+    },
+    
+    curCSS: {
+      rmvPostFix: {
+        zIndex: true, 
+        fontWeight: true, 
+        opacity: true, 
+        zoom: true, 
+        lineHeight: true
+      },
+      
+      // Get computed style
+      get: function(o, style) {
+        return o.currentStyle ? o.currentStyle[style] : 
+          win.getComputedStyle(o, n).getPropertyValue(style);
+      }
+    }
+  });
+  
+  pl.extend(pl.fn, {
+    css: function(style, set) {
+      if(set) {
+        style = pl.camelCase(style);
+        
+        if(pl.type(set, 'int') && !pl.curCSS.rmvPostFix[style]) {
+          set += 'px';
+        }
+        
+        pl.each(this.elements, function() {
+          this.style[style] = set;
+        });
+      } else {
+        if(pl.type(style, 'str')) {
+          return pl.curCSS.get(this.elements[0], style);
+        } else {
+          for(var key in style) {
+            pl.fn.css.call(this, key, style[key]);
+          }
+        }
+      }
+      return this;
+    }
+  });
+  
+})();
+
+/* Module: Ajax.js
+ * Requirements: Core.js
+**/
+
+(function() {
+  
+  pl.extend({
+    // Convert object to a 'param-string'
+    toParams: function(o) {
+      var pieces = [];
+      for(var key in o) {
+        pieces.push(
+          encodeURIComponent(key) + '=' + encodeURIComponent(o[key])
+        );
+      }
+      return pieces.join('&');
+    },
+    
+    ajax: function(params) {
+      var Request;
+      var requestPrepare = function() {
+        if(win.XMLHttpRequest) { // Modern browsers
+          Request = new XMLHttpRequest();
+          
+          if(Request.overrideMimeType) {
+            Request.overrideMimeType('text/html');
+          }
+        } else if(win.ActiveXObject) { // Obsolete IE
+          try {
+            Request = new ActiveXObject('Msxml2.XMLHTTP');
+          } catch(e) {
+            try {
+              Request = new ActiveXObject('Microsoft.XMLHTTP');
+            } catch(er) {}
+          }
+        }
+        
+        if(!Request) {
+          pl.error('Could not create a XMLHttpRequest instance.');
+        }
+        
+        // Fix related with `attachEvent`
+        Request.onreadystatechange = function(e) {
+          if(Request.readyState === 1) {
+            (params.load || ef)();
+          } else if(Request.readyState === 4) {
+            if(Request.status > 199 && Request.status < 300) {
+              (params.success || ef)(
+                params.dataType === 'json' ? // Parse JSON if necessary
+                  pl.JSON(Request.responseText) : 
+                  Request.responseText,
+                Request.status
+              );
+            } else {
+              (params.error || ef)(Request.status, Request.responseText);
+            }
+          }
+          
+          params.always = params.always || ef;
+          
+          try {
+            params.always(Request.readyState, Request.status, Request.responseText);
+          } catch(e) {
+            params.always(Request.readyState);
+          }
+        };
+      };
+      
+      // Common headers
+      var headers = function(type) {
+        // To identify that it's XHR
+        Request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        
+        if(type) {
+          Request.setRequestHeader(
+            'Content-type', 
+            'application/x-www-form-urlencoded; charset=' + 
+            (params.charset || 'utf-8')
+          );
+        }
+      };
+      
+      params.data  = pl.toParams(params.data || {});
+      params.async = params.async || true;
+      requestPrepare();
+      
+      if(params.type === 'POST') {
+        Request.open('POST', params.url, params.async);
+        headers(1);
+        Request.send(params.data);
+      } else {
+        Request.open('GET', params.url + '?' + params.data, params.async);
+        headers();
+        Request.send(n);
+      }
+    }
+  });
+  
 })();
 
 /* Module: Attr.js
@@ -644,63 +712,6 @@
       pl.each(this.elements, function() {
         pl(selector, context, index).prepend(this);
       });
-      return this;
-    }
-  });
-  
-})();
-
-/* Module: Css.js
- * Requirements: Core.js, Manipulate.js
-**/
-
-(function() {
-  
-  pl.extend({
-    camelCase: function(str) {
-      if(!str.match('-')) return str;
-      var parts = str.split('-');
-      return parts[0] + parts[1].charAt(0).toUpperCase() + parts[1].substr(1);  
-    },
-    
-    curCSS: {
-      rmvPostFix: {
-        zIndex: true, 
-        fontWeight: true, 
-        opacity: true, 
-        zoom: true, 
-        lineHeight: true
-      },
-      
-      // Get computed style
-      get: function(o, style) {
-        return o.currentStyle ? o.currentStyle[style] : 
-          win.getComputedStyle(o, n).getPropertyValue(style);
-      }
-    }
-  });
-  
-  pl.extend(pl.fn, {
-    css: function(style, set) {
-      if(set) {
-        style = pl.camelCase(style);
-        
-        if(pl.type(set, 'int') && !pl.curCSS.rmvPostFix[style]) {
-          set += 'px';
-        }
-        
-        pl.each(this.elements, function() {
-          this.style[style] = set;
-        });
-      } else {
-        if(pl.type(style, 'str')) {
-          return pl.curCSS.get(this.elements[0], style);
-        } else {
-          for(var key in style) {
-            pl.fn.css.call(this, key, style[key]);
-          }
-        }
-      }
       return this;
     }
   });
@@ -1066,23 +1077,12 @@
   pl.extend({    
     map: function(array, fn) {
       var output = [];
-      pl.each(array, function(k) {
-        output[k] = fn(this);
+      pl.each(array, function() {
+        output.push(fn(this));
       });
       return output;
     },
     
-    filter: function(array, reservation) {
-      var output = [],
-          key    = 0;
-      pl.each(array, function(k, val) {
-        if(reservation(val)) {
-          output[key++] = val;
-        }
-      });
-      return output;
-    },
-     
     every: function(array, reservation) {
       var flag = true;
       pl.each(array, function(k, val) {
@@ -1221,6 +1221,62 @@
 
 (function(win, doc, undefined) {
   
+  /* NOTE:
+   * this.elements (in pl() instance) always exists, so checking if this.elements equals true
+   * is senseless, it will be always true. Much better will be checking if it's empty or 
+   * trying to compare the first element with false values (false, null, undefined).
+   * 
+   * Examples:
+   * this.elements[0] || ...
+   * pl.empty(this.elements)
+   * this.elements[0] !== undefined
+  **/
+  
+  pl.extend({
+    selectedBy: function(elem, selector) {
+      var elems = pl(selector).get();
+      return elems === elem || pl.filter(elems, function(el) {
+        return el === elem;
+      }).length > 0;
+    },
+
+    related: function(elem, fn, mod) {
+      if(pl.type(mod, 'undef')) {
+        mod = 1;
+      }
+      
+      var get;
+      var ret = pl();
+      ret.selector = [elem.id, fn, mod];
+      
+      if(pl.type(mod, 'int')) {
+        get = function(e, step) {
+          return step > 0 ? get(e[fn], --step) : e;
+        };
+      } else {
+        get = function(e, selector) {
+          var ret = [];
+          var rel, i;
+          
+          if(rel = e[fn]) {
+            if(!selector || pl.selectedBy(rel, selector)) {
+              ret.push(rel);
+            }
+            
+            if(i = get(rel, selector)) {
+              return ret.concat(i);
+            }
+            
+            return ret;
+          }
+        };
+      }
+      
+      ret.elements = get(elem, mod);
+      return ret;
+    }
+  });
+
   pl.extend(pl.fn, {
     toggleClass: function(c) {
       pl.each(this.elements, function() {
@@ -1262,24 +1318,43 @@
         return this.elements[0].value;
       }
     },
-    
+
     prev: function(iterations) {
-      for(var key = 0; key < (iterations || 1); ++key) {
-        this.elements = [this.elements[0].previousSibling];
-      }
-      return this;
+      return pl.related(this.elements[0], 'previousSibling', iterations);
     },
     
     next: function(iterations) {
-      for(var key = 0; key < (iterations || 1); ++key) {
-        this.elements = [this.elements[0].nextSibling];
-      }
-      return this;
+      return pl.related(this.elements[0], 'nextSibling', iterations);
     },
     
-    children: function() {
-      this.elements = [this.elements[0].childNodes];
-      return this;
+    children: function(selector) {
+      var children = pl.related(this.elements[0] || this, 'children');
+      if(selector) {
+        children.elements = pl.filter(children.elements, function(e) {
+          return pl.selectedBy(e, selector);
+        });
+      }
+      return children;
+    },
+
+    find: function(selector) {
+      var children = pl.related(this.elements[0] || this, 'children');
+      var list = [];
+      pl.each(children.elements, function(k, v) {
+        if(pl.selectedBy(this, selector)) {
+          list.push(v);
+        } else if(pl.type(v, 'obj')) {
+          var found = pl(this).find(selector).get();
+          list = list.concat(pl.type(found, 'arr') ? found : [found]);
+        }
+      });
+      
+      children.elements = list;
+      return children;
+    },
+    
+    parents: function(selector) {
+      return pl.related(this.elements[0] || this, 'parentNode', selector || '*');
     },
     
     replaceWith: function(el, options) {
