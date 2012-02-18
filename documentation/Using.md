@@ -173,3 +173,18 @@ BUT: if you created a module, it will have the following structure:
 ```
 
 So, module, roughly speaking, is just an additional namespace (what's convenient when module is complicated).
+
+---
+
+##Additional step: additional kernel initialise
+
+Tautology...
+
+Kumquat ensures an ability to create an additional kernel init 
+(the first one is integrated into `/src/kernel/kernel.js` and it's undesirable to amend it). This init will be fired om
+each page load. The main advantage of it is that it's completely common and will be fired irrespective whether it's 
+imported or not (you can use extensions/modules, of course, but you if using them, 
+you ought to import them, had in mind).
+
+Additional kernel init's code is placed in `/src/kernel/init.js`. In that file there's a pre-defined function (
+`ke.data.kernel.save.user_init`), just write code, will be fired when dom loaded, in it.
