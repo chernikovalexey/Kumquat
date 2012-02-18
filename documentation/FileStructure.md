@@ -26,3 +26,10 @@ __Tree:__
   * [__./ui/__](https://github.com/chernikovalexey/Kumquat/tree/master/src/ui) - UI elements
   * [__./hub/__](https://github.com/chernikovalexey/Kumquat/tree/master/src/hub) - MVC srtucture for `../pages/public/`
   * [__./lib/__](https://github.com/chernikovalexey/Kumquat/tree/master/src/lib) - external libraries used in Kumquat
+
+* __Buildfile__ - [Kumquat Buildfile](https://github.com/chernikovalexey/Kumquat/tree/master/documentation/Buildfile.md)
+
+---
+
+Directory useful only while developing is __cl__. So before archiving the final release of the extension, you can
+exclude __cl__.
