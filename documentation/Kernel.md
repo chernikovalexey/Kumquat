@@ -80,3 +80,77 @@ ke.import('s:pages.common.main');
 
 console.log(ke.import.getLoaded()); // => ['/src/ext/tpl.js', '/resources/style/pages/common/main.css']
 ```
+
+---
+
+###Data container `ke.data`
+
+
+
+---
+
+###Functions in `ke` namespace
+
+__Current section `ke.section`:__
+
+It's a [getter](http://ejohn.org/blog/javascript-getters-and-setters/), which contains current section (
+name of the current html file without its extension).
+
+E.g. for page "chrome-extension://extension_id/pages/public/window.html" section equals to "window".
+
+__Extension ID `ke.extId`:__
+
+It's a getter, too. It contains extension's id (each Chrome extension has id).
+
+__Path to extension `ke.pathToExt`:__
+
+Getter. It contains path to the extension. It's useful, if `chrome.extension.getURL` is not suitable to you.
+
+__Get flag contents by its name `ke.getFlag(name)`:__
+
+Get `name` flag's contents (true or false).
+
+__Create a new flag `ke.createFlag(name[, default_value])`:__
+
+It creates a new flag, if it does not exist. 
+
+`name` - name of a new flag. `default_value` - boolean value of just-created flag, by default it's false.
+
+```javascript
+console.log(ke.getFlag('is_chrome')); // => undefined
+ke.createFlag('is_chrome', true);
+console.log(ke.getFlag('is_chrome')); // => true
+```
+
+__Set flag to true `ke.setFlagTrue(name)`:__
+
+Sets `name` flag to true.
+
+```javascript
+ke.createFlag('is_chrome');
+console.log(ke.getFlag('is_chrome')); // => false
+ke.setFlagTrue('is_chrome');
+console.log(ke.getFlag('is_chrome')); // => true
+```
+
+__Set flag to false `ke.setFlagFalse(name)`:__
+
+Sets `name` flag to false.
+
+```javascript
+ke.createFlag('is_opera', true);
+console.log(ke.getFlag('is_opera')); // => true
+ke.setFlagFalse('is_opera');
+console.log(ke.getFlag('is_opera')); // => false
+```
+
+__Get constant value `ke.getConst(name)`:__
+
+Returns `name` constant value.
+
+```javascript
+console.log(ke.getConst('STYLE_PREFIX')); // => 's:'
+```
+
+---
+

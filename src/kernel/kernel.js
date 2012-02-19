@@ -279,13 +279,13 @@
       return ke.data.kernel.info.section;
     },
     
-    get extID() {
+    get extId() {
       return ke.data.kernel.info.id;
     },
     
     // Where `chrome.extension.getURL` does not approach
     get pathToExt() {
-      return 'chrome-extension://' + ke.extID + '/';
+      return 'chrome-extension://' + ke.extId + '/';
     },
     
     getFlag: function(n) {
@@ -300,11 +300,15 @@
     },
     
     setFlagTrue: function(n) {
-      ke.data.kernel.flags[n] = true;
+      if(!pl.type(ke.data.kernel.flags[n], 'undef')) {
+        ke.data.kernel.flags[n] = true;
+      }
     },
     
     setFlagFalse: function(n) {
-      ke.data.kernel.flags[n] = false;
+      if(!pl.type(ke.data.kernel.flags[n], 'undef')) {
+        ke.data.kernel.flags[n] = false;
+      }
     },
     
     getConst: function(n) {
