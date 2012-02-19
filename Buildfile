@@ -1,6 +1,4 @@
 {
-
-  // What's different from standard Chrome manifest.json
   "icons": {
     "16": "icon16",
     "48": "icon48",
@@ -12,26 +10,16 @@
     "matches": ["*://*/*"]
   }],
   "browser_action": {
-    "icon": "icon19",                   // optional
-    "default_title": "Open the window", // optional; shown in tooltip
-    "popup": true                       // optional
-  },
-  "page_action": {
-    "icon": "foo",              // optional
-    "title": "Open the window", // optional; shown in tooltip
-    "popup": true               // optional
+    "icon": "icon_ba",
+    "default_title": "Open the window",
+    "popup": true
   },
   "background_page": true,
   "options_page": true,
-  
-  //
-  // Completely equal to manifest.json standard
-  
-  // Required
-  "name": "Kumquat Ext",
-  "version": "1.0",
 
-  // Recommended
+  "name": "Kumquat Ext Framework",
+  "version": "1.0.0",
+
   "description": "Browser extensions development kit for Chrome",
   "default_locale": "en"
 }

@@ -238,7 +238,6 @@
       
       // Public kernel data
       save: {
-        stack: [],
         internal_pages: ['content']
       }
     }
@@ -267,7 +266,6 @@
       });
       
       // Fire functions
-      ke.stack('run');
       ke.loadCurrentHub();
       
       // Deploy Kernel DB environment
@@ -276,23 +274,7 @@
         ke.db.execSql('CREATE TABLE ' + ke.getConst('CACHE_TABLE') + ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, timestamp DATETIME, name VARCHAR(255), data TEXT)', [], null, null);
       });
     },
-    
-    // Functions which should be fired after dom loaded
-    // Note: FIFO type of storing
-    stack: function(flag, fn, args) {
-      args = args || [];
-      args = args.shift ? args : [args];
-      
-      if(flag === 'push') {
-        ke.data.kernel.save.stack.push([fn, args]);
-      } else if(flag === 'run') {
-        pl.each(ke.data.kernel.save.stack, function(k, v) {
-          v[0].apply(ke, v[1]);
-          ke.data.kernel.save.stack.splice(k, 1);
-        });
-      }
-    },
-    
+        
     get section() {
       return ke.data.kernel.info.section;
     },
