@@ -85,7 +85,31 @@ console.log(ke.import.getLoaded()); // => ['/src/ext/tpl.js', '/resources/style/
 
 ###Data container `ke.data`
 
+It stores all extension settings, related to its work, not to storing user-data.
 
+It has two public properties: `ke.data.kernel` and `ke.data.app`.
+
+The second one (`ke.data.app`) is absolutely empty and it's aimed on using in hubs for storing arbitatry information.
+The first one is much complicated, it consists of the following properties:
+
+* `const` - constants. Now there are only 4: STYLE_PREFIX (equals to "s:"), 
+            ROOT_PREFIX (equals to "root:"), KERNEL_DB (equals to "KE_Kernel") and CACHE_TABLE (equals to "Cache");
+
+* `flags` - flags. Initially there is the only flag - `dom_loaded`, which equals true after DOM Loaded. You can also
+            create flags manually (read further about this feature);
+
+* `info` - current page and browser information. Has 4 properties: `url` (current url), `ver` (Chrome version),
+           `lang` (Chrome interface language), `id` (extension id).
+
+__Examples:__
+
+```javascript
+console.log(ke.data.app); // => {}
+console.log(ke.data.kernel['const'].ROOT_PREFIX); // => 'root:'
+console.log(ke.data.kernel['const'].CACHE_TABLE); // => 'Cache'
+console.log(ke.data.kernel.info.ver); // => '17.0.963.56'
+console.log(ke.data.kernel.info.lang); // => 'en-GB'
+```
 
 ---
 
@@ -153,4 +177,8 @@ console.log(ke.getConst('STYLE_PREFIX')); // => 's:'
 ```
 
 ---
+
+###Kumquat DB (`ke.db`)
+
+__Choose the database to work with `ke.db.choose(name[, size])`:__
 
