@@ -37,9 +37,9 @@ Instead of manifest's entry:
 
 ```
 "icons": {
-  "16": "resources/images/icons/icon16.png",
-  "48": "resources/images/icons/icon48.png",
-  "128": "resources/images/icons/icon128.png"
+  "16": "/resources/images/icons/icon16.png",
+  "48": "/resources/images/icons/icon48.png",
+  "128": "/resources/images/icons/icon128.png"
 }
 ```
 
@@ -60,9 +60,9 @@ The same but in manifest:
 
 ```
 "icons": {
-  "16": "resources/images/icons/icon16.gif",
-  "48": "resources/images/icons/icon48.gif",
-  "128": "resources/images/icons/icon128.gif"
+  "16": "/resources/images/icons/icon16.gif",
+  "48": "/resources/images/icons/icon48.gif",
+  "128": "/resources/images/icons/icon128.gif"
 }
 ```
 
@@ -88,12 +88,12 @@ Analogue of the upper example in manifest:
 ```
 "content_scripts": [{
   "css": [
-    "resources/styles/pages/common/main.css", 
-    "resources/styles/pages/internal/content.css"
+    "/resources/styles/pages/common/main.css", 
+    "/resources/styles/pages/internal/content.css"
   ],
   "js": [
-    "src/lib/prevel.js",
-    "src/kernel/kernel.js"
+    "/src/lib/prevel.js",
+    "/src/kernel/kernel.js"
   ],
   "matches": ["*://*/*"]
 }]
@@ -128,7 +128,7 @@ In manifest:
 "browser_action" : {
   "icon": "resources/images/icons/icon_ba",
   "default_title": "Open the window",
-  "popup": "pages/public/window.html"
+  "popup": "/pages/public/window.html"
 }
 ```
 
@@ -155,7 +155,7 @@ In manifest:
 "page_action" : {
   "icon": "resources/images/icons/icon_ba",
   "default_title": "Open the window",
-  "popup": "pages/public/window.html"
+  "popup": "/pages/public/window.html"
 }
 ```
 ---
@@ -173,7 +173,7 @@ In Buidlfile:
 In manifest:
 
 ```
-"background_page": ""
+"background_page": "/pages/internal/background.html"
 ```
 
 ---
@@ -191,10 +191,74 @@ In Buidlfile:
 In manifest:
 
 ```
-"options_page": ""
+"options_page": "/pages/public/options.html"
 ```
 
 ---
 
 ##Creating a simple Buidlfile
 
+Let's have a look on a simple Buidlfile. Anytime you can compile manifest from it: `node cl.js build`.
+
+```
+{
+  "icons": {
+    "16": "icon16",
+    "48": "icon48",
+    "128": "icon128"
+  },
+  "content_scripts": [{
+    "css": true,
+    "js": true,
+    "matches": ["*://*/*"]
+  }],
+  "browser_action": {
+    "icon": "icon_ba",
+    "default_title": "Open the window",
+    "popup": true
+  },
+  "background_page": true,
+  "options_page": true,
+
+  "name": "Kumquat Ext Framework",
+  "version": "1.0.0",
+
+  "description": "Browser extensions development kit for Chrome",
+  "default_locale": "en"
+}
+```
+
+After building though the command line, you'll have `manifest.json` in root with the following contents:
+
+```
+{
+  "icons":{
+    "16": "/resources/images/icons/icon16.png",
+    "48": "/resources/images/icons/icon48.png",
+    "128": "/resources/images/icons/icon128.png"
+  },
+  "content_scripts":[{
+    "css": [
+      "resources/styles/pages/common/main.css",
+      "resources/styles/pages/internal/content.css"
+    ],
+    "js": [
+      "src/lib/prevel.js",
+      "src/kernel/kernel.js"
+    ],
+    "matches": ["*://*/*"]
+  }],
+  "browser_action": {
+    "icon": "/resources/images/icons/icon_ba.png",
+    "default_title": "Open the window",
+    "popup": "/pages/public/window.html"
+  },
+  "background_page": "/pages/internal/background.html",
+  "options_page": "/pages/public/options.html",
+  
+  "name": "Kumquat Ext Framework",
+  "version": "1.0.0",
+  
+  "description": "Browser extensions development kit for Chrome"
+}
+```
