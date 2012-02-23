@@ -566,7 +566,6 @@
             r.push(res.rows.item(key));
           }
           
-          r = r.length === 1 ? r[0] : r;
           callback(r);
         },
         null
@@ -628,7 +627,7 @@
   pl.extend(ke.nav, {
     go: function(pagename, delay) {
       setTimeout(function() {
-        doc.location = '/pages/public/' + pagename;
+        doc.location = '/pages/public/' + pagename + '.html';
       }, delay || 0);
     }
   });

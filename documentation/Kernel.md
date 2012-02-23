@@ -373,4 +373,78 @@ ke.us.push('latina');
 console.log(ke.us.length()); // => 2
 ```
 
-__ke.us.pluck([name, ]from[, to]):__
+---
+
+###Kumquat Cache (`ke.cache`)
+
+It is a long-term storage based on Web SQL Database.
+
+__ke.cache.save(name, msg):__
+
+Save `msg` with name `name` to the cache.
+
+```javascript
+ke.cache.save('TODO', 'Add some docs');
+```
+
+__ke.cache.update(name, msg):__
+
+Updates all entries with name `name` 
+(if `name` is number instead of string, then all entries with id equals to `name` will be selected) by changing their 
+contents to `msg`.
+
+```javascript
+ke.cache.save('TODO', 'Add some docs');
+ke.cache.update('TODO', 'No, do nothing');
+```
+
+__ke.cache.clean():__
+
+Makes cache empty. Be careful with it.
+
+__ke.cache.remove(id):__
+
+Removes all elements which has id equals `id` (or name equals `id`, if `id` is a string) for the cache.
+
+__ke.cache.each(fn):__
+
+It fires `fn` function for each cache element.
+
+Arguments are `name`, `msg`, `id`, `timestamp`. `timestamp` is a Unix time value when this entry was added.
+
+```javascript
+ke.cache.save('TODO', 'Test');
+ke.cache.save('TODO', 'Test #2');
+
+ke.cache.each(function(name, value, id, time) {
+  console.log(name + ' #' + id + ':', value, 'at', time);
+});
+```
+
+__ke.cache.get(id, callback):__
+
+It selects all element with id equals `id` (or name equals `id`, if `id` is a string) and fires `fn` function an
+argument represented by array contains selected objects.
+
+```javascript
+ke.cache.save('TODO', 'Test');
+ke.cache.save('TODO', 'Test #2');
+
+ke.cache.get('TODO', function(o) {
+  console.log(o);
+});
+```
+
+---
+
+###Kumquat Navigation API (`ke.nav`)
+
+Now it has only one method. It's aimed on providing convenient transitions between hubs. Without it it's necessary to
+declare long unfancy pathes to files (e.g. `/pages/public/translator.html`) instead of `translator` when using Nav API.
+
+__ke.nav.go(hub_name[, delay]):__
+
+```javascript
+ke.nav.go('translator'); // Transit immediately
+ke.nav.go('translator', 1000); // Transit in a second
+```
