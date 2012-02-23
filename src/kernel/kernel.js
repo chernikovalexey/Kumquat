@@ -1,12 +1,14 @@
-/* Kumquat Kernel
+/*
+ * Kumquat Kernel
  * 
  * Copyright, 2012, Chernikov Alexey - http://github.com/chernikovalexey
  * 
- * Provides routing and managing of all in-extension processes,
- * a few useful APIs, such as User-storage, Web SQL DB API Wrap, Cache.
+ * Provides routing and managing of all in-extension processes, a few useful
+ * APIs, such as User-storage, Web SQL DB API Wrap, Cache.
  * 
- * For its proper work requires Prevel (http://github.com/chernikovalexey/Prevel).
-**/
+ * For its proper work requires Prevel
+ * (http://github.com/chernikovalexey/Prevel).
+ */
 
 (function(win, doc, undefined) {
   
@@ -45,7 +47,7 @@
   // PUBLIC
   
   // Extend window with `ke`
-  // General structure of `ke`; 
+  // General structure of `ke`;
   // perhaps, some properties will be reassigned
   win.ke = {
     data: {},     // Data container
@@ -68,16 +70,13 @@
     }
   }
   
-  /* Module: import
-   * (inherently, it's an analogue of `import` in Java)
+  /*
+   * Module: import (inherently, it's an analogue of `import` in Java)
    * 
-   * Provides:
-   *  - Organizing queues of files to be loaded;
-   *  - Loading queue after Dom ready;
-   *  - Supports .js and .css;
-   *  - Storing history of loaded files;
-   *  - Reacting with firing callback when queue is loaded.
-  **/
+   * Provides: - Organizing queues of files to be loaded; - Loading queue after
+   * Dom ready; - Supports .js and .css; - Storing history of loaded files; -
+   * Reacting with firing callback when queue is loaded.
+   */
   
   ke.import = (function() {
     return function(src, sub) {
@@ -149,9 +148,12 @@
         
         ke.import.ready.push(0);
         
-        // Root access to files is needed when current section equals to 'content',
-        // so it is impossible to load js in the habitual way (they won't be content scripts,
-        // because Chrome allows to load content scripts from the manifest file only, 
+        // Root access to files is needed when current section equals to
+        // 'content',
+        // so it is impossible to load js in the habitual way (they won't be
+        // content scripts,
+        // because Chrome allows to load content scripts from the manifest file
+        // only,
         // that's beforehand).
         if(root) {
           pl.ajax({
@@ -198,14 +200,12 @@
     }
   });
   
-  /* Module: data
-   * (based on basic objects)
+  /*
+   * Module: data (based on basic objects)
    * 
-   * Provides storing:
-   *  - kernel settings;
-   *  - current flags (dom loaded, ...);
-   *  - user containers (`ke.storage`).
-  **/
+   * Provides storing: - kernel settings; - current flags (dom loaded, ...); -
+   * user containers (`ke.storage`).
+   */
   
   pl.extend(ke.data.import, {
     loaded: []
@@ -249,9 +249,10 @@
       'content'
   });
 
-  /* Public kernel functions and getters
+  /*
+   * Public kernel functions and getters
    * 
-  **/
+   */
   
   pl.extend(ke, {
     
@@ -326,8 +327,8 @@
     },
     
     // Two variants which fires..:
-    //  - before loading the script/style
-    //  - after its loading
+    // - before loading the script/style
+    // - after its loading
     deploy: {
       hub: {
         before: function(n) {
@@ -367,34 +368,47 @@
     }
   });
   
-  /* Module: db
-   * (useful api for web sql database)
+  /*
+   * Module: db (useful api for web sql database)
    * 
-   * Provides:
-   *  - Adding new databases
-   *  - Executing requests to the selected db
-   *  - Deleting db
-  **/
+   * Provides: - Adding new databases - Executing requests to the selected db -
+   * Deleting db
+   */
+  
+  // Simple size parsing from a string (5 mb => 5242880)
+  var parseSize = function(s) {
+    if(pl.type(s, 'int') || pl.type(s, 'undef')) {
+      return s;
+    }
+    
+    var t = s.split(' ');
+    var to = t.pop().toLowerCase();
+    
+    return t[0] * Math.pow(1024, to === 'mb' ? 2 : 1);
+  };
   
   pl.extend(ke.db, {
     choose: function(name, size) {
       ke.data.db.current = name;
+      size = parseSize(size) || 5 * Math.pow(1024, 2);
       
-      var db = openDatabase(name, '1.0.0', name + ' database', size || 5 * Math.pow(1024, 2));
+      var db = openDatabase(name, '1.0.0', name + ' database', size);
       
       if(!db) {
         pl.error('Could not create the database.');
       }
       
-      ke.data.db.list.__defineGetter__(name, function() {
-        var db = openDatabase(name, '1.0.0', name + ' database', size || 5 * Math.pow(1024, 2));
-        
-        if(!db) {
-          pl.error('Could not connect to the database.');
-        }
-        
-        return db;
-      });
+      if(!ke.data.db.list.__lookupGetter__(name)) {
+        ke.data.db.list.__defineGetter__(name, function() {
+          var db = openDatabase(name, '1.0.0', name + ' database', size);
+          
+          if(!db) {
+            pl.error('Could not connect to the database.');
+          }
+          
+          return db;
+        });
+      }
     },
     
     get selected() {
@@ -414,17 +428,14 @@
     }
   });
   
-  /* Module: us
-   * (instant type of storage based on objects)
+  /*
+   * Module: us (instant type of storage based on objects)
    * 
-   * Provides:
-   *  - Selecting storage to work with;
-   *  - Pushing new data to the selected storage;
-   *  - Getting last element of the storage;
-   *  - Getting first element of the storage;
-   *  - Getting arbitrary element of the storage;
-   *  - Deleting it (storage).
-  **/
+   * Provides: - Selecting storage to work with; - Pushing new data to the
+   * selected storage; - Getting last element of the storage; - Getting first
+   * element of the storage; - Getting arbitrary element of the storage; -
+   * Deleting it (storage).
+   */
   
   // Init the default storage - with an empty key
   ke.data.us.list[ke.data.us.current] = [];
@@ -506,17 +517,12 @@
     }
   });
   
-  /* Module: cache
-   * (long-term cache based on Web SQL DB)
+  /*
+   * Module: cache (long-term cache based on Web SQL DB)
    * 
-   * Provides:
-   *  - Saving;
-   *  - Getting;
-   *  - Updating;
-   *  - Removing elements;
-   *  - Purging the whole cache;
-   *  - Going through the cache using `each`.
-  **/
+   * Provides: - Saving; - Getting; - Updating; - Removing elements; - Purging
+   * the whole cache; - Going through the cache using `each`.
+   */
   
   // Data, at first
   pl.extend(ke.data.cache, {
@@ -602,12 +608,11 @@
     }
   });
   
-  /* Module: nav
-   * (navigation between ordinary pages)
+  /*
+   * Module: nav (navigation between ordinary pages)
    * 
-   * Provides:
-   *  - Redirecting to the given page.
-  **/
+   * Provides: - Redirecting to the given page.
+   */
   
   pl.extend(ke.nav, {
     go: function(pagename, delay) {
