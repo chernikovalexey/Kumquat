@@ -386,7 +386,7 @@
     
     return t[0] * Math.pow(1024, to === 'mb' ? 2 : 1);
   };
-  
+   
   pl.extend(ke.db, {
     choose: function(name, size) {
       ke.data.db.current = name;
@@ -423,7 +423,11 @@
         
     execSql: function(req, s, o, f) {
       ke.db.currentDb.transaction(function(tx) {
-        tx.executeSql(req, s, o, f);
+        tx.executeSql(req, s, function(tx, res) {
+          o(res);
+        }, function(tx, err) {
+          f(err);
+        });
       });
     }
   });

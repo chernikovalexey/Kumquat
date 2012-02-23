@@ -182,3 +182,50 @@ console.log(ke.getConst('STYLE_PREFIX')); // => 's:'
 
 __Choose the database to work with `ke.db.choose(name[, size])`:__
 
+It chooses the database for future working. It the database doesn't exist, it creates the database.
+
+Note: before using other methods of `ke.db` you should obligatorly choose the database.
+
+__Selected database `ke.db.selected`:__
+
+Getter. Contains the name of the selected database (chose using the previously described method).
+
+```javascript
+ke.db.choose('test_db');
+console.log(ke.db.selected); // => 'test_db'
+```
+
+__ke.db.execSql(req, replace, success, error):__
+
+This method executes `req` for selected database (using `ke.db.choose()`). If necessary, it can replace "?" signs in
+`req` to values in `replace` array accordingly. `success` and `error` are callbacks which will be fired on success
+and on error of the request accordingly.
+
+```javascript
+ke.db.choose('test_db', '50 MB'); // Size of db equlals 50 MB
+console.log(ke.db.selected); // => 'test_db'
+
+// Execute this SQL merely for 'test_db' database
+ke.db.execSql(
+  'SELECT * FROM test_table WHERE id > ? AND name = ?',
+  
+  // Replace the first "?" with 782 and the second one with "row_name"
+  // So SQL, inherently, equals SELECT * FROM test_table WHERE id > 782 AND name = "row_name"
+  [782, 'row_name'], 
+  function(result) {
+    var len = result.rows.length;
+    for(var key = 0; key < len; ++key) {
+      console.log(result.rows.item(key));
+    }
+  },
+  function(error) {
+    console.error(error);
+  }
+);
+```
+
+---
+
+###Kumquat User-Storage (`ke.us`)
+
+__:__
