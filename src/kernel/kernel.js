@@ -497,7 +497,14 @@
     },
     
     pluck: function(n, from, to) {
-      return ke.data.us.list[n || ke.data.us.current].splice(from, pl.type(to, 'undef') ? 1 : to);
+      if(!pl.type(n, 'str')) {
+        to = from;
+        from = n;
+        n = ke.data.us.current;
+      }
+      
+      var alias = ke.data.us.list[n || ke.data.us.current];
+      return alias.splice(from, pl.type(to, 'undef') ? alias.length - 1 : to);
     },
     
     each: function(n, fn) {
