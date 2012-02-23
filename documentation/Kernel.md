@@ -180,6 +180,8 @@ console.log(ke.getConst('STYLE_PREFIX')); // => 's:'
 
 ###Kumquat DB (`ke.db`)
 
+Convenient API which wraps standard Web SQL DB API, adding a few methods.
+
 __Choose the database to work with `ke.db.choose(name[, size])`:__
 
 It chooses the database for future working. It the database doesn't exist, it creates the database.
@@ -228,4 +230,147 @@ ke.db.execSql(
 
 ###Kumquat User-Storage (`ke.us`)
 
-__:__
+JavaScript Object based storage with wealthy API. You're able to create lots of storages for further manipulations.
+
+__ke.us.choose(name):__
+
+Defaultly selected storage is "" - with empty name.
+
+Selects the storage with name `name` for further manipulations, but in contrast `ke.db` API 
+here it's optional, so if you don't choose storage at first, other methods will work with default 
+storage (named "" - empty). If it does not exist, creates a new one, named `name`.
+
+```javascript
+ke.us.choose('obj_storage');
+```
+
+__ke.us.chooseDefault():__
+
+Chooses the default storage (named "" - empty name). It is chosen by default (before all changings).
+
+__ke.us.choosePrev():__
+
+Chooses the previously selected storage.
+
+```javascript
+ke.us.choose('test_db'); // current storage is 'test_db'
+ke.us.choose('another_db'); // current storage is 'another_db'
+ke.us.choosePrev(); // current storage is 'test_db' again
+```
+
+__ke.us.push([name, ]msg):__
+
+It adds `msg` to the end of the current storage 
+(actually, storage is array because of requirement to store lots of values). You can also define `name`, then it will
+add `msg` to storage named `name` (if `name` storage does not exist, it will be created) instead of the current.
+
+```javascript
+ke.us.choose('test_storage');
+ke.us.push('Some text..'); // Now 'test_storage' contains 'Some text..'
+ke.us.push('another_storage', 'More text..'); // 'another_storage' has been created and now contains 'More text..'
+```
+
+__ke.us.unshift([name, ]msg):__
+
+It adds `msg` to the beginning of the current storage. You can also define `name`, then it will add `msg` to storage
+named `name` (if `name` storage does not exist, it will be created) instead of the current.
+
+```javascript
+ke.us.choose('test_storage');
+ke.us.unshift('Some text..'); // Now 'test_storage' contains 'Some text..'
+ke.us.unshift('To the beginning..'); // 'test_storage' = ['To the beginning..', 'Some text..'] now
+ke.us.unshift('another_storage', 'More text..'); // 'another_storage' has been created and now contains 'More text..'
+```
+
+__ke.us.pop([name]):__
+
+It returns the last element of the current storage. If `name` is defined, returns the last element of storage named 
+`name`.
+
+Note: after returning it DELETES returned element from the storage.
+
+```javascript
+ke.us.choose('test_storage');
+ke.us.unshift('Lingua ');
+ke.us.push('latina');
+console.log(ke.us.pop()); // => 'latina'
+
+ke.us.push('new_storage', 'Text.');
+console.log(ke.us.pop('new_storage')); // => 'Text.'
+```
+
+__ke.us.shift([name]):__
+
+It returns the first element of the current storage. If `name` is defined, returns the first element of storage named
+`name`.
+
+Note: after returning it DELETES returned element from the storage.
+
+```javascript
+ke.us.choose('test_storage');
+ke.us.unshift('Lingua ');
+ke.us.push('latina');
+console.log(ke.us.shift()); // => 'Lingua '
+
+ke.us.push('new_storage', 'Text.');
+console.log(ke.us.shift('new_storage')); // => 'Text.'
+```
+
+__ke.us.get([name, ]position):__
+
+It returns element which is on position #`position` (starts from 0) from the current storage. If `name` is defined,
+it will return element which is on position #`position` from storage named `name`.
+
+`position` can be equaled to "last" or "first", if it's necessary to get the last of first element accordingly, 
+otherwise it's number (e.g. `ke.us.get(2)`).
+
+Note: it DOES NOT delete anything after returning, in contrast `ke.us.pop()`/`ke.us.shift()`.
+
+```javascript
+ke.us.choose('test_storage');
+ke.us.unshift('Lingua ');
+ke.us.push('latina');
+console.log(ke.us.get('first')); // => 'Lingua '
+console.log(ke.us.get('last')); // => 'latina'
+console.log(ke.us.get(0)); // => 'Lingua '
+console.log(ke.us.get(1)); // => 'latina'
+```
+
+__ke.us.each([name, ]fn):__
+
+It fires `fn` for each element in the current storage (if `name` is defined, then in storage named `name`).
+
+`fn` will be fired with two arguments: value and key (its position in the storage, starts from 0).
+
+```javascript
+ke.us.choose('test_storage');
+ke.us.unshift('Lingua ');
+ke.us.push('latina');
+
+ke.us.each(function(value, key) {
+  console.log('Entry #' + key + ':', value);
+});
+
+/* Outputs:
+ * Entry #0: Lingua 
+ * Entry #1: latina
+ */
+```
+
+__ke.us.empty([name]):__
+
+Makes the current storage (if `name` is defined, then storage named `name`) empty.
+
+__ke.us.length([name]):__
+
+Returns the amount of elements in the current storage (if `name` is defined, then storage named `name`).
+
+```javascript
+ke.us.choose('test_storage');
+ke.us.unshift('Lingua ');
+ke.us.push('latina');
+
+console.log(ke.us.length()); // => 2
+```
+
+__ke.us.pluck([name, ]from[, to]):__
