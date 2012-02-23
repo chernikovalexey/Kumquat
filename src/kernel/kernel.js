@@ -424,9 +424,9 @@
     execSql: function(req, s, o, f) {
       ke.db.currentDb.transaction(function(tx) {
         tx.executeSql(req, s, function(tx, res) {
-          o(res);
+          (o || ef)(res);
         }, function(tx, err) {
-          f(err);
+          (f || ef)(err);
         });
       });
     }
