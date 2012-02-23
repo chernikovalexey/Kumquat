@@ -10,7 +10,7 @@
     "matches": ["*://*/*"]
   }],
   "browser_action": {
-    "icon": "icon_ba",
+    "icon": "icon128",
     "default_title": "Open the window",
     "popup": true
   },
