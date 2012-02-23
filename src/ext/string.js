@@ -1,4 +1,4 @@
-/* Kumquat Extension - Html
+/* Kumquat Extension - String
  * 
 **/
 
@@ -7,7 +7,7 @@
   // Get contents of the script
   var script_regex = '<script[^>]*>([\\S\\s]*?)<\/script>';
   
-  pl.extend(ke.ext.html, {
+  pl.extend(ke.ext.string, {
     // Replace html entities with their unrendered variants
     escapeHtml: function(str) {
       return str
