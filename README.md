@@ -1,7 +1,7 @@
 #Kumquat Ext Framework
 
 __Kumquat__ is a framework aimed on fast extensions developing for __Google Chrome__. Using it you can focus on primary tasks, 
-such as describing extension's appeareance and behaviour, instead of sorting out with the file structure, routers and so on.
+such as describing extension's appearance and behaviour, instead of sorting out with the file structure, routers and so on.
 Literally, sorting out with the file system is unnecessary - Kumquat has a __Command Line API__, where it's possible to
 create, remove modules, build extension, minify files. The other convenient side of its using is the amount of built-in
 functions and methods: __[Prevel API](https://github.com/chernikovalexey/Prevel/tree/master/Docs)__ is available, plus 
