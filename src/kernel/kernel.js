@@ -120,6 +120,7 @@
       var root = src.substring(0, 5) === ke.getConst('ROOT_PREFIX');
       
       src = ke.import.addRes( ke.import.parseType(src) );
+      // console.log(ke.import.parseType(src), ke.import.addRes( ke.import.parseType(src) ));
       
       if(pl.type(sub, 'undef')) {
         var parts = src.split('/');
@@ -134,11 +135,11 @@
       
       var parent = src.split('/')[root ? 4 : 2];
       pl.each(sub, function(k, v) {
-        if(~pl.inArray(v, ke.data.import.loaded)) {
+        if(~pl.inArray(src + v, ke.data.import.loaded)) {
           return;
         }
         
-        if(ke.deploy[parent]) {
+        if(ke.deploy[parent] && ke.deploy[parent].before) {
           ke.deploy[parent].before(v.split('.')[0], src.split('/').splice(-2, 1)[0]);
         } else {
           // Define as an empty function, because it will fired a bit later
@@ -155,9 +156,11 @@
         // because Chrome allows to load content scripts from the manifest file
         // only,
         // that's beforehand).
+        
+        var final_path = src + v;
         if(root) {
           pl.ajax({
-            url: src + v,
+            url: final_path,
             type: 'GET',
             success: function(data) {
               win.eval(data);
@@ -167,7 +170,7 @@
           });
         } else {
           pl.attach({
-            url: src + v,
+            url: final_path,
             load: function(u) {            
               ke.data.import.loaded.push(
                 !pl.empty(ke.data.import.queue_name) ? 
@@ -264,15 +267,15 @@
       // Get and execute additional init
       ke.import('kernel.init').onDone(function() {
         ke.data.kernel.save.user_init();
-      });
-      
-      // Fire functions
-      ke.loadCurrentHub();
-      
-      // Deploy Kernel DB environment
-      ke.db.choose(ke.getConst('KERNEL_DB'));
-      ke.db.execSql('SELECT * FROM ?', [ke.getConst('CACHE_TABLE')], null, function() {
-        ke.db.execSql('CREATE TABLE ' + ke.getConst('CACHE_TABLE') + ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, timestamp DATETIME, name VARCHAR(255), data TEXT)', [], null, null);
+     
+        // Fire functions
+        ke.loadCurrentHub();
+        
+        // Deploy Kernel DB environment
+        ke.db.choose(ke.getConst('KERNEL_DB'));
+        ke.db.execSql('SELECT * FROM ?', [ke.getConst('CACHE_TABLE')], null, function() {
+          ke.db.execSql('CREATE TABLE ' + ke.getConst('CACHE_TABLE') + ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, timestamp DATETIME, name VARCHAR(255), data TEXT)', [], null, null);
+        });
       });
     },
         
@@ -312,18 +315,78 @@
       }
     },
     
-    getConst: function(n) {
-      return ke.data.kernel['const'][n];
+    getConst: function(where, n) {
+      if (!n) {
+        n = where;
+        where = 'data.kernel';
+      }
+      
+      var tmp = window.ke;
+      var p = where.split('.');
+      pl.each(p, function(k, v) {
+        tmp = tmp[v];
+      });
+      
+      return tmp['const'][n];
     },
     
     loadCurrentHub: function() {
-      ke.import('hub.' + ke.section + '.*', ['router', 'render', 'handlers']).onDone(function() {       
+      // Scripts
+      ke.import('hub.' + ke.section + '.*', ['router', 'render', 'handlers']).onDone(function() {
+        var ready = [];
+        
         pl.each(ke.app.import || [], function(k, v) {
-          ke.import(v);
+          ready.push(0);
+          ke.import(v).onDone(function() {
+            ready.pop();
+          });
         });
         
-        ke.app.init();
+        var int = setInterval(function() {
+          if(pl.empty(ready)) {
+            clearInterval(int);
+            ke.app.init();
+          }
+        }, 1);
       });
+
+      // Styles
+      if(ke.section !== 'background') {
+        var path = (ke.section === 'content' ? 'internal' : 'public') + '.' + ke.section;
+        ke.import('s:pages.common.main');
+        ke.import('s:pages.' + path);
+      }
+    },
+
+    getResource: function(p) {
+      return '/resources/' + p;
+    },
+      
+    getImage: function(n) {
+      return this.getResource('images/' + n + '.png');
+    },
+      
+    proccessCall: function() {
+      var p = [];
+      pl.each(arguments, function(k, v) {
+        p.push(v);
+      })
+      return p.join(ke.getConst('DELIMITER'));
+    },
+      
+    parseProccessCall: function(command) {
+      var tmp = command.split(ke.getConst('DELIMITER'));
+      var f = {
+        lib: tmp[0],
+        cmd: tmp[1],
+        exact: tmp[2]
+      };
+      return f;
+    },
+      
+    // It's a bit shorter
+    getLocale: function() {
+      return chrome.i18n.getMessage.apply(chrome, arguments);
     },
     
     // Two variants which fires..:
@@ -391,13 +454,7 @@
     choose: function(name, size) {
       ke.data.db.current = name;
       size = parseSize(size) || 5 * Math.pow(1024, 2);
-      
-      var db = openDatabase(name, '1.0.0', name + ' database', size);
-      
-      if(!db) {
-        pl.error('Could not create the database.');
-      }
-      
+            
       if(!ke.data.db.list.__lookupGetter__(name)) {
         ke.data.db.list.__defineGetter__(name, function() {
           var db = openDatabase(name, '1.0.0', name + ' database', size);
@@ -409,6 +466,8 @@
           return db;
         });
       }
+      
+      ke.data.db.list[name];
     },
     
     get selected() {
@@ -493,7 +552,7 @@
         n = ke.data.us.current;
       }
       var us = ke.data.us.list[n];
-      return us[index === 'first' ? 0 : (index === 'last' ? us.length - 1 : index)] || null;
+      return us[index === 'first' ? 0 : (index === 'last' ? us.length - 1 : index)] || us;
     },
     
     pluck: function(n, from, to) {

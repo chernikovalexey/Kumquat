@@ -1,4 +1,4 @@
-/* Prevel Library v1.2.7
+/* Prevel Library v1.2.11
  * http://github.com/chernikovalexey/Prevel
  * 
  * Copyright 2011-2012, Alexey Chernikov
@@ -280,7 +280,7 @@
             pl.events.ready(o);
             break; 
           case 'obj':
-            _int = o[0] ? o : [o];
+            _int = o[params || 0] ? o : [o];
             break;
         }
 
@@ -363,7 +363,7 @@
   
   pl.extend(pl.fn, {
     css: function(style, set) {
-      if(set) {
+      if(!pl.type(set, 'undef')) {
         style = pl.camelCase(style);
         
         if(pl.type(set, 'int') && !pl.curCSS.rmvPostFix[style]) {
@@ -434,13 +434,10 @@
           if(Request.readyState === 1) {
             (params.load || ef)();
           } else if(Request.readyState === 4) {
-            if(Request.status > 199 && Request.status < 300) {
-              (params.success || ef)(
-                params.dataType === 'json' ? // Parse JSON if necessary
-                  pl.JSON(Request.responseText) : 
-                  Request.responseText,
-                Request.status
-              );
+            Request.responseText = params.dataType === 'json' ? pl.JSON(Request.responseText) : Request.responseText;
+            
+            if((Request.status > 199 && Request.status < 300) || Request.status === 304) {
+              (params.success || ef)(Request.responseText, Request.status);
             } else {
               (params.error || ef)(Request.status, Request.responseText);
             }
@@ -479,7 +476,7 @@
         headers(1);
         Request.send(params.data);
       } else {
-        Request.open('GET', params.url + '?' + params.data, params.async);
+        Request.open('GET', params.url + (!pl.empty(params.data) ? '?' + params.data : ''), params.async);
         headers();
         Request.send(n);
       }
@@ -487,6 +484,7 @@
   });
   
 })();
+
 
 /* Module: Attr.js
  * Requirements: Core.js, Manipulate.js
@@ -558,159 +556,6 @@
 
       pl.each(this.elements, function() {
         this[attr] = n;
-      });
-      return this;
-    }
-  });
-  
-})();
-
-/* Module: Insert.js
- * Requirements: Core.js, Manipulate.js
-**/
-
-(function() {
-  
-  pl.extend({
-    innerText: pl.browser('ie') ? 'innerText' : 'textContent',
-        
-    innerContent: {
-      midst: function(e, method, ins, to) {
-        var init = e;
-        var e = init.elements[0];
-
-        if(pl.type(ins, u)) {
-          return e[method];
-        } else {
-          if(pl.type(ins, 'obj')) {
-            var temp = doc.createElement('div');
-            temp.appendChild(ins);
-            ins = temp.innerHTML;
-          }
-              
-          pl.each(init.elements, function() {
-            if(!to) {
-              this[method] = ins;
-            } else if(~to) {
-              this[method] += ins;
-            } else {
-              this[method] = ins + this[method];
-            }
-          });
-          return init;
-        }
-      },
-          
-      edge: function(_this, args, table, dir, fn) {
-        var a = pl.clean(args);
-        for(var i = (dir < 0 ? a.length - 1 : 0); i != (dir < 0 ? dir : a.length); i += dir) {
-          fn(_this, a[i]);
-        }
-      }
-    },
-    
-    clean: function(a) {
-      var r = [];
-      var len = a.length;
-      
-      for(var i = 0; i < len; ++i) {
-        if(pl.type(a[i], 'str')) {         
-          var table = '';
-    
-          if(!a[i].indexOf('<thead') || !a[i].indexOf('<tbody')) {
-            table = 'thead';
-            a[i] = '<table>' + a[i] + '</table>';
-          } else if(!a[i].indexOf('<tr')) {
-            table = 'tr';
-            a[i] = '<table>' + a[i] + '</table>';
-          } else if(!a[i].indexOf('<td') || !a[i].indexOf('<th')) {
-            table = 'td';
-            a[i] = '<table><tbody><tr>' + a[i] + '</tr></tbody></table>';
-          }
-    
-          var div = doc.createElement('div');
-          div.innerHTML = a[i];
-    
-          if(table) {
-            div = div.firstChild;
-            if(table !== 'thead') div = div.firstChild;
-            if(table === 'td') div = div.firstChild;
-          }
-
-          var cn_len = div.childNodes.length;
-          for(var j = 0; j < cn_len; ++j) {
-            r.push(div.childNodes[j]);
-          }
-        } else if(a[i] !== n) {
-          r.push(a[i].nodeType ? a[i] : doc.createTextNode(a[i].toString()));
-        }
-      }
-      
-      return r;
-    }
-  });
-  
-  pl.extend(pl.fn, {
-    html: function(ins, to) {
-      // Delegate to the common method
-      return pl.innerContent.midst(this, 'innerHTML', ins, to);
-    },
-    
-    text: function(ins, to) {
-      // The same as in pl().html()
-      return pl.innerContent.midst(this, pl.innerText, ins, to);
-    },
-    
-    after: function() {
-      var args = arguments;
-      pl.each(this.elements, function() {
-        pl.innerContent.edge(this, args, false, -1, function(o, a) {
-          o.parentNode.insertBefore(a, o.nextSibling);
-        });
-      });
-      return this;
-    },
-    
-    before: function() {
-      var args = arguments;
-      pl.each(this.elements, function() {
-        pl.innerContent.edge(this, args, false, 1, function(o, a) {
-          o.parentNode.insertBefore(a, o);
-        });
-      });
-      return this;
-    },
-        
-    append: function() {
-      var args = arguments;
-      pl.each(this.elements, function() {
-        pl.innerContent.edge(this, args, true, 1, function(o, a) {
-          o.appendChild(a);
-        });
-      });
-      return this;
-    },
-
-    prepend: function() {
-      var args = arguments;
-      pl.each(this.elements, function() {
-        pl.innerContent.edge(this, args, true, -1, function(o, a){
-          o.insertBefore(a, o.firstChild);
-        });
-      });
-      return this;
-    },
-   
-    appendTo: function(selector, context, index) {
-      pl.each(this.elements, function() {
-        pl(selector, context, index).append(this);
-      });
-      return this;
-    },
-    
-    prependTo: function(selector, context, index) {
-      pl.each(this.elements, function() {
-        pl(selector, context, index).prepend(this);
       });
       return this;
     }
@@ -963,6 +808,665 @@
     unbind: function(evt, fn) {
       // The same as in pl().bind()
       return pl.events.routeEvent(evt, fn, 0);
+    }
+  });
+  
+})();
+
+/* Module: Find.js
+ * Requirements: Core.js
+ * Copyright 2008-2009, Nikolay Matsievsky (sunnybear) - http://yass.webo.in
+**/
+
+(function() {
+  
+  var classSupport = !!doc[ge + 'sByClassName'],
+      qsSupport    = !!doc.querySelectorAll;
+
+  pl.find = (function(_) {
+    pl.extend(_, {      
+      attr: {
+        '': function(child, attr) {
+          return !!child.getAttribute(attr);
+        },
+        '=': function(child, attr, value) {
+          return (attr = child.getAttribute(attr)) && attr === value;
+        },
+        '&=': function(child, attr, value) {
+          return 
+            (attr = child.getAttribute(attr)) && 
+            (new RegExp('(^| +)' + value + '($| +)').test(attr));
+        },
+        '^=': function(child, attr, value) {
+          return 
+            (attr = child.getAttribute(attr) + '') && !attr.indexOf(value);
+        },
+        '$=': function(child, attr, value) {
+          return 
+            (attr = child.getAttribute(attr) + '') && 
+            attr.indexOf(value) === attr.length - value.length;
+        },
+        '*=': function(child, attr, value) {
+          return 
+            (attr = child.getAttribute(attr) + '') && 
+            attr.indexOf(value) != -1;
+        },
+        '|=': function(child, attr, value) {
+          return 
+            (attr = child.getAttribute(attr) + '') && 
+            (attr === value || !!attr.indexOf(value + '-'));
+        },
+        '!=': function(child, attr, value) {
+          return 
+            !(attr = child.getAttribute(attr)) || 
+            !(new RegExp('(^| +)' + value + '($| +)').test(attr)) ||
+            true;
+        }
+      },
+      
+      mods: {
+        'first-child': function(child) {
+          return child.parentNode.getElementsByTagName('*')[0] !== child;
+        },
+        'last-child': function(child) {
+          var brother = child;
+          while((brother = brother.nextSibling) && brother.nodeType != 1) {}
+            return !!brother;
+        },
+        root: function(child) {
+          return child.nodeName.toLowerCase() !== 'html';
+        },
+        'nth-child': function(child, ind) {
+          var i = child.nodeIndex || 0,
+              a = ind[3] = ind[3] ? (ind[2] === '%' ? -1 : 1) * ind[3] : 0,
+              b = ind[1];
+
+          if(i) {
+            return !( (i + a) % b);
+          } else {
+            var brother = child.parentNode.firstChild;
+            i++;
+  
+            do {
+              if(
+                 brother.nodeType == 1 && 
+                 (brother.nodeIndex = ++i) && 
+                 child === brother && 
+                 ((i + a) % b)
+              ) {
+                return 0;
+              }
+            } while(brother = brother.nextSibling);
+            return 1;
+          }
+        },
+        'nth-last-child': function(child, ind) {
+          var i = child.nodeIndexLast || 0,
+              a = ind[3] ? (ind[2] === '%' ? -1 : 1) * ind[3] : 0,
+              b = ind[1];
+          if(i) {
+            return !( (i + a) % b);
+          } else {
+            var brother = child.parentNode.lastChild;
+            i++;
+            do {
+              if(
+                 brother.nodeType == 1 && 
+                 (brother.nodeLastIndex = i++) && 
+                 child === brother && 
+                 ((i + a) % b)
+              ) {
+                return 0;
+              }
+            } while(brother = brother.previousSibling);
+            return 1;
+          }
+        },
+        empty: function(child) {
+          return !!child.firstChild;
+        },
+        parent: function(child) {
+          return !child.firstChild;
+        },
+        'only-child': function(child) {
+          return child.parentNode[ge + 'sByTagName']('*').length != 1;
+        },
+        checked: function(child) {
+          return !child.checked;
+        },
+        lang: function(child, ind) {
+          return child.lang !== ind && doc.documentElement.lang !== ind;
+        },
+        enabled: function(child) {
+          return child.disabled || child.type === 'hidden';
+        },
+        disabled: function(child) {
+          return !child.disabled;
+        },
+        selected: function(elem){
+          child.parentNode.selectedIndex;
+          return !child.selected;
+        }
+      }
+    });
+     
+    return function(selector, root) {
+      if(root) {
+        selector = root + ' ' + selector;
+      }
+      
+      root = doc;
+      var sets = [];
+
+      if(selector === 'body *') {
+        return doc.body[ge + 'sByTagName']('*');
+      } else if(/^[\w[:#.][\w\]*^|=!]*$/.test(selector)) {        
+        var idx = 0;
+
+        switch(selector.charAt(0)) {
+        case '#':
+          idx  = selector.slice(1);
+          sets = doc[ge + 'ById'](idx);
+
+          if(pl.browser('ie') && sets.id !== idx) {
+            sets = doc.all[idx];
+          }
+
+          sets = sets ? [sets] : [];
+          break;
+        case '.':
+          var klass = selector.slice(1);
+
+          if(classSupport) {
+            sets = (
+            idx = (sets = root[ge + 'sByClassName'](klass)).length
+            ) ? sets : [];
+          } else {
+            klass = ' ' + klass + ' ';
+            var nodes = root[ge + 'sByTagName']('*'),
+                i     = 0,
+                node;
+
+            while(node = nodes[i++]) {
+              if((' ' + node[cn] + ' ').indexOf(klass) != -1) {
+                sets[idx++] = node;
+              }
+            }
+            sets = idx ? sets : [];
+          }
+          break;
+        case ':':
+          var node,
+              nodes = root[ge + 'sByTagName']('*'),
+              i = 0,
+              ind = selector.replace(/[^(]*\(([^)]*)\)/, "$1"),
+              mod = selector.replace(/\(.*/,'');
+ 
+          while(node = nodes[i++]) {
+            if(_.mods[mod] && !_.mods[mod](node, ind)) {
+              sets[idx++] = node;
+            }
+          }
+          sets = idx ? sets : [];
+          break;
+        case '[':
+          var nodes = root[ge + 'sByTagName']('*'),
+              node,
+              i = 0,
+              attrs = /\[([^!~^*|$ [:=]+)([$^*|]?=)?([^ :\]]+)?\]/.exec(
+                selector
+              ),
+              attr = attrs[1],
+              eql = attrs[2] || '',
+              value = attrs[3];
+
+          while(node = nodes[i++]) {
+            console.log('216:', eql);
+            
+            if(
+             _.attr[eql] && 
+             (
+               _.attr[eql](node, attr, value) || 
+               (
+                 attr === 'class' && 
+                 _.attr[eql](node, cn, value)
+               )
+             )
+            ) {
+              sets[idx++] = node;
+            }
+          }
+          sets = idx ? sets : [];
+          break;
+        default:
+          sets = (
+            idx = (sets = root[ge + 'sByTagName'](selector)).length
+          ) ? sets : [];
+          break;
+        }
+      } else {
+        if(qsSupport && !~selector.indexOf('!=')) {
+          sets = root.querySelectorAll(
+            selector.replace(/=([^\]]+)/, '="$1"')
+          );
+        } else {
+          var groups = selector.split(/ *, */),
+              gl     = groups.length - 1,
+              concat = !!gl,
+              group, singles, singles_length, single, i, ancestor, 
+              nodes, tag, id, klass, attr, eql, mod, ind, newNodes, 
+              idx, J, child, last, childs, item, h;
+  
+          while(group = groups[gl--]) {
+            singles_length = (
+              singles = group
+              .replace(/(\([^)]*)\+/,"$1%")
+              .replace(/(\[[^\]]+)~/,"$1&")
+              .replace(/(~|>|\+)/," $1 ")
+              .split(/ +/)
+            ).length;
+            i = 0;
+            ancestor = ' ';
+            nodes = [root];
+  
+            while(single = singles[i++]) {
+              if(
+                 single !== ' ' && 
+                 single !== '>' && 
+                 single !== '~' && 
+                 single !== '+' && 
+                 nodes
+              ) {
+                single = single.match(/([^[:.#]+)?(?:#([^[:.#]+))?(?:\.([^[:.]+))?(?:\[([^!&^*|$[:=]+)([!$^*|&]?=)?([^:\]]+)?\])?(?:\:([^(]+)(?:\(([^)]+)\))?)?/);
+                tag = single[1] || '*';
+                id = single[2];
+                klass = single[3] ? ' ' + single[3] + ' ' : '';
+                attr = single[4];
+                eql = single[5] || '';
+                mod = single[7];
+                ind = 
+                  mod === 'nth-child' || 
+                  mod === 'nth-last-child' ? 
+                    /(?:(-?\d*)n)?(?:(%|-)(\d*))?/.exec(
+                    single[8] === 'even' && 
+                    '2n' || 
+                    single[8] === 'odd' && 
+                    '2n%1' || 
+                    !/\D/.test(single[8]) && 
+                    '0n%' + single[8] || 
+                    single[8]
+                    ) : 
+                    single[8];
+                  
+                newNodes = [];
+                idx = J = 0;
+                last = i == singles_length;
+    
+                while(child = nodes[J++]) {
+                  switch(ancestor) {
+                    case ' ':
+                    childs = child[ge + 'sByTagName'](tag);
+                    h = 0;
+    
+                    console.log('304: ...');
+                    
+                    while(item = childs[h++]) {
+                      if(
+                         (!id || item.id === id) && 
+                         (
+                         !klass || 
+                         (' ' + item[cn] + ' ')
+                           .indexOf(klass) != -1
+                         ) && (
+                         !attr || 
+                         (
+                           _.attr[eql] && 
+                           (
+                             _.attr[eql](item, attr, single[6]) || 
+                             (
+                             attr === 'class' && 
+                             _.attr[eql](
+                               item, cn, single[6]
+                             )
+                             )
+                           )
+                         )
+                         ) && 
+                         !item.yeasss && 
+                         !(
+                         _.mods[mod] ? 
+                           _.mods[mod](item, ind) : 
+                           mod
+                         )
+                      ) {
+                        console.log('Passed.');
+                        
+                        if(last) {
+                          item.yeasss = 1;
+                        }
+                        newNodes[idx++] = item;
+                      }
+                    }
+                    break;
+                    case '~':
+                    tag = tag.toLowerCase();
+    
+                    while(
+                        (child = child.nextSibling) && 
+                        !child.yeasss
+                    ) {
+                      if(
+                         child.nodeType == 1 && 
+                         (
+                         tag === '*' || 
+                         child.nodeName.toLowerCase() === tag
+                         ) && 
+                         (!id || child.id === id) && 
+                         (
+                         !klass || 
+                         (' ' + child[cn] + ' ')
+                           .indexOf(klass) != -1
+                         ) && (
+                         !attr || 
+                         (
+                           _.attr[eql] && 
+                           (
+                             _.attr[eql](item, attr, single[6]) || 
+                             (
+                             attr === 'class' && 
+                             _.attr[eql](
+                               item, cn, single[6]
+                             )
+                             )
+                           )
+                         )
+                         ) && 
+                         !child.yeasss && 
+                         !(
+                         _.mods[mod] ? 
+                           _.mods[mod](child, ind) : 
+                           mod
+                        )
+                      ) {
+                        if(last) {
+                         child.yeasss = 1;
+                        }
+                        newNodes[idx++] = child;
+                      }
+                    }
+                    break;
+                    case '+':
+                    while(
+                        (child = child.nextSibling) && 
+                        child.nodeType != 1
+                    ) {}
+                    if(
+                       child && 
+                       (
+                         child.nodeName.toLowerCase() === 
+                         tag.toLowerCase() || 
+                         tag === '*'
+                       ) && (
+                         !id || 
+                         child.id === id
+                       ) && (
+                         !klass || 
+                         (' ' + item[cn] + ' ')
+                         .indexOf(klass) != -1
+                       ) && (
+                         !attr || 
+                         (
+                         _.attr[eql] && 
+                         (
+                           _.attr[eql](item, attr, single[6]) || 
+                           (
+                             attr === 'class' && 
+                             _.attr[eql](
+                             item, cn, single[6]
+                             )
+                           )
+                         )
+                         )
+                       ) && 
+                       !child.yeasss && 
+                       !(
+                         _.mods[mod] ? 
+                         _.mods[mod](child, ind) : 
+                         mod
+                       )
+                    ) {
+                      if(last) {
+                        child.yeasss = 1;
+                      }
+                      newNodes[idx++] = child;
+                    }
+                    break;
+                    case '>':
+                    childs = child[ge + 'sByTagName'](tag);
+                    i = 0;
+                    while(item = childs[i++]) {
+                      if(
+                         item.parentNode === child && 
+                         (!id || item.id === id) && 
+                         (
+                         !klass || 
+                         (' ' + item[cn] + ' ')
+                           .indexOf(klass) != -1
+                         ) && (
+                           !attr || 
+                           (
+                             _.attr[eql] && 
+                             (
+                             _.attr[eql](item, attr, single[6]) || 
+                             (
+                               attr === 'class' && 
+                               _.attr[eql](
+                                 item, cn, single[6]
+                               )
+                             )
+                             )
+                           )
+                         ) && 
+                         !item.yeasss && 
+                         !(
+                           _.mods[mod] ? 
+                             _.mods[mod](item, ind) : 
+                             mod
+                         )
+                      ) {
+                        if(last) {
+                        item.yeasss = 1;
+                        }
+                        newNodes[idx++] = item;
+                      }
+                    }
+                    break;
+                  }
+                }
+                nodes = newNodes;
+              } else {
+                ancestor = single;
+              }
+            }
+  
+            if(concat) {
+              if(!nodes.concat) {
+                newNodes = [];
+                h = 0;
+    
+                while(item = nodes[h]) {
+                  newNodes[h++] = item;
+                }
+                nodes = newNodes;
+              }
+              sets = nodes.concat(sets.length == 1 ? sets[0] : sets);
+            } else {
+              sets = nodes;
+            }
+          }
+          idx = sets.length;
+           
+          while(idx--) {
+            sets[idx].yeasss = sets[idx].nodeIndex = 
+              sets[idx].nodeIndexLast = n;
+          }
+        }
+      }
+
+      return sets;
+    };
+  })({});
+  
+})();
+
+/* Module: Insert.js
+ * Requirements: Core.js, Manipulate.js
+**/
+
+(function() {
+  
+  pl.extend({
+    innerText: pl.browser('ie') ? 'innerText' : 'textContent',
+        
+    innerContent: {
+      midst: function(e, method, ins, to) {
+        var init = e;
+        var e = init.elements[0];
+
+        if(pl.type(ins, u)) {
+          return e[method];
+        } else {
+          if(pl.type(ins, 'obj')) {
+            var temp = doc.createElement('div');
+            temp.appendChild(ins);
+            ins = temp.innerHTML;
+          }
+              
+          pl.each(init.elements, function() {
+            if(!to) {
+              this[method] = ins;
+            } else if(~to) {
+              this[method] += ins;
+            } else {
+              this[method] = ins + this[method];
+            }
+          });
+          return init;
+        }
+      },
+          
+      edge: function(_this, args, table, dir, fn) {
+        var a = pl.clean(args);
+        for(var i = (dir < 0 ? a.length - 1 : 0); i != (dir < 0 ? dir : a.length); i += dir) {
+          fn(_this, a[i]);
+        }
+      }
+    },
+    
+    clean: function(a) {
+      var r = [];
+      var len = a.length;
+      
+      for(var i = 0; i < len; ++i) {
+        if(pl.type(a[i], 'str')) {         
+          var table = '';
+    
+          if(!a[i].indexOf('<thead') || !a[i].indexOf('<tbody')) {
+            table = 'thead';
+            a[i] = '<table>' + a[i] + '</table>';
+          } else if(!a[i].indexOf('<tr')) {
+            table = 'tr';
+            a[i] = '<table>' + a[i] + '</table>';
+          } else if(!a[i].indexOf('<td') || !a[i].indexOf('<th')) {
+            table = 'td';
+            a[i] = '<table><tbody><tr>' + a[i] + '</tr></tbody></table>';
+          }
+    
+          var div = doc.createElement('div');
+          div.innerHTML = a[i];
+    
+          if(table) {
+            div = div.firstChild;
+            if(table !== 'thead') div = div.firstChild;
+            if(table === 'td') div = div.firstChild;
+          }
+
+          var cn_len = div.childNodes.length;
+          for(var j = 0; j < cn_len; ++j) {
+            r.push(div.childNodes[j]);
+          }
+        } else if(a[i] !== n) {
+          r.push(a[i].nodeType ? a[i] : doc.createTextNode(a[i].toString()));
+        }
+      }
+      
+      return r;
+    }
+  });
+  
+  pl.extend(pl.fn, {
+    html: function(ins, to) {
+      // Delegate to the common method
+      return pl.innerContent.midst(this, 'innerHTML', ins, to);
+    },
+    
+    text: function(ins, to) {
+      // The same as in pl().html()
+      return pl.innerContent.midst(this, pl.innerText, ins, to);
+    },
+    
+    after: function() {
+      var args = arguments;
+      pl.each(this.elements, function() {
+        pl.innerContent.edge(this, args, false, -1, function(o, a) {
+          o.parentNode.insertBefore(a, o.nextSibling);
+        });
+      });
+      return this;
+    },
+    
+    before: function() {
+      var args = arguments;
+      pl.each(this.elements, function() {
+        pl.innerContent.edge(this, args, false, 1, function(o, a) {
+          o.parentNode.insertBefore(a, o);
+        });
+      });
+      return this;
+    },
+        
+    append: function() {
+      var args = arguments;
+      pl.each(this.elements, function() {
+        pl.innerContent.edge(this, args, true, 1, function(o, a) {
+          o.appendChild(a);
+        });
+      });
+      return this;
+    },
+
+    prepend: function() {
+      var args = arguments;
+      pl.each(this.elements, function() {
+        pl.innerContent.edge(this, args, true, -1, function(o, a){
+          o.insertBefore(a, o.firstChild);
+        });
+      });
+      return this;
+    },
+   
+    appendTo: function(selector, context, index) {
+      pl.each(this.elements, function() {
+        pl(selector, context, index).append(this);
+      });
+      return this;
+    },
+    
+    prependTo: function(selector, context, index) {
+      pl.each(this.elements, function() {
+        pl(selector, context, index).prepend(this);
+      });
+      return this;
     }
   });
   
@@ -1375,6 +1879,38 @@
   });
   
 })(this, document);
+
+/* Prevel Events Extension
+ * (adds cross-browser triggering)
+ * 
+ * Requirements: Core.js
+**/
+
+(function() {
+
+  pl.extend(pl.fn, {
+    trigger: function(evt) {
+      var event;
+      if (document.createEvent) {
+        event = document.createEvent('HTMLEvents');
+        event.initEvent(evt, true, true);
+      } else {
+        event = document.createEventObject();
+        event.eventType = 'on' + evt;
+      }
+
+      event.eventName = evt;
+      var element = this.elements[0];
+
+      if (document.createEvent) {
+        element.dispatchEvent(event);
+      } else {
+        element.fireEvent(event.eventType, event);
+      }
+    }
+  });
+  
+})();
 
 /* Prevel Observer Extension
  * (provides basic implementation of "observer" pattern)
