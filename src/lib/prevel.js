@@ -1,4 +1,4 @@
-﻿/* Prevel Library v1.2.12
+﻿/* Prevel Library v1.2.16
  * http://github.com/chernikovalexey/Prevel
  * 
  * Copyright 2011-2012, Alexey Chernikov
@@ -397,6 +397,10 @@
   pl.extend({
     // Convert object to a 'param-string'
     toParams: function(o) {
+      if(pl.type(o, 'str')) {
+        return o;
+      }
+
       var pieces = [];
       for(var key in o) {
         pieces.push(
@@ -434,19 +438,22 @@
           if(Request.readyState === 1) {
             (params.load || ef)();
           } else if(Request.readyState === 4) {
-            Request.responseText = params.dataType === 'json' ? pl.JSON(Request.responseText) : Request.responseText;
-            
+            var re = Request.responseText;
+            if(params.dataType === 'json') {
+              re = pl.JSON(re);
+            }
+
             if((Request.status > 199 && Request.status < 300) || Request.status === 304) {
-              (params.success || ef)(Request.responseText, Request.status);
+              (params.success || ef)(re, Request.status);
             } else {
-              (params.error || ef)(Request.status, Request.responseText);
+              (params.error || ef)(Request.status, re);
             }
           }
           
           params.always = params.always || ef;
           
           try {
-            params.always(Request.readyState, Request.status, Request.responseText);
+            params.always(Request.readyState, Request.status, re);
           } catch(e) {
             params.always(Request.readyState);
           }
@@ -476,7 +483,11 @@
         headers(1);
         Request.send(params.data);
       } else {
-        Request.open('GET', params.url + (!pl.empty(params.data) ? '?' + params.data : ''), params.async);
+        Request.open(
+          'GET', 
+          params.url + (!pl.empty(params.data) ? (params.url.match(/\?/) ? '&' : '?') + params.data : ''),
+          params.async
+        );
         headers();
         Request.send(n);
       }
@@ -541,7 +552,7 @@
         }); 
       } else {
         if(pl.type(attr, 'str')) {
-          return this.elements[0][attr];
+          return this.elements[0][attr] || this.elements[0].getAttribute(attr);
         } else {
           for(var key in attr) {
             pl.fn.attr.call(this, key, attr[key]);
@@ -556,159 +567,6 @@
 
       pl.each(this.elements, function() {
         this[attr] = n;
-      });
-      return this;
-    }
-  });
-  
-})();
-
-/* Module: Insert.js
- * Requirements: Core.js, Manipulate.js
-**/
-
-(function() {
-  
-  pl.extend({
-    innerText: pl.browser('ie') ? 'innerText' : 'textContent',
-        
-    innerContent: {
-      midst: function(e, method, ins, to) {
-        var init = e;
-        var e = init.elements[0];
-
-        if(pl.type(ins, u)) {
-          return e[method];
-        } else {
-          if(pl.type(ins, 'obj')) {
-            var temp = doc.createElement('div');
-            temp.appendChild(ins);
-            ins = temp.innerHTML;
-          }
-              
-          pl.each(init.elements, function() {
-            if(!to) {
-              this[method] = ins;
-            } else if(~to) {
-              this[method] += ins;
-            } else {
-              this[method] = ins + this[method];
-            }
-          });
-          return init;
-        }
-      },
-          
-      edge: function(_this, args, table, dir, fn) {
-        var a = pl.clean(args);
-        for(var i = (dir < 0 ? a.length - 1 : 0); i != (dir < 0 ? dir : a.length); i += dir) {
-          fn(_this, a[i]);
-        }
-      }
-    },
-    
-    clean: function(a) {
-      var r = [];
-      var len = a.length;
-      
-      for(var i = 0; i < len; ++i) {
-        if(pl.type(a[i], 'str')) {         
-          var table = '';
-    
-          if(!a[i].indexOf('<thead') || !a[i].indexOf('<tbody')) {
-            table = 'thead';
-            a[i] = '<table>' + a[i] + '</table>';
-          } else if(!a[i].indexOf('<tr')) {
-            table = 'tr';
-            a[i] = '<table>' + a[i] + '</table>';
-          } else if(!a[i].indexOf('<td') || !a[i].indexOf('<th')) {
-            table = 'td';
-            a[i] = '<table><tbody><tr>' + a[i] + '</tr></tbody></table>';
-          }
-    
-          var div = doc.createElement('div');
-          div.innerHTML = a[i];
-    
-          if(table) {
-            div = div.firstChild;
-            if(table !== 'thead') div = div.firstChild;
-            if(table === 'td') div = div.firstChild;
-          }
-
-          var cn_len = div.childNodes.length;
-          for(var j = 0; j < cn_len; ++j) {
-            r.push(div.childNodes[j]);
-          }
-        } else if(a[i] !== n) {
-          r.push(a[i].nodeType ? a[i] : doc.createTextNode(a[i].toString()));
-        }
-      }
-      
-      return r;
-    }
-  });
-  
-  pl.extend(pl.fn, {
-    html: function(ins, to) {
-      // Delegate to the common method
-      return pl.innerContent.midst(this, 'innerHTML', ins, to);
-    },
-    
-    text: function(ins, to) {
-      // The same as in pl().html()
-      return pl.innerContent.midst(this, pl.innerText, ins, to);
-    },
-    
-    after: function() {
-      var args = arguments;
-      pl.each(this.elements, function() {
-        pl.innerContent.edge(this, args, false, -1, function(o, a) {
-          o.parentNode.insertBefore(a, o.nextSibling);
-        });
-      });
-      return this;
-    },
-    
-    before: function() {
-      var args = arguments;
-      pl.each(this.elements, function() {
-        pl.innerContent.edge(this, args, false, 1, function(o, a) {
-          o.parentNode.insertBefore(a, o);
-        });
-      });
-      return this;
-    },
-        
-    append: function() {
-      var args = arguments;
-      pl.each(this.elements, function() {
-        pl.innerContent.edge(this, args, true, 1, function(o, a) {
-          o.appendChild(a);
-        });
-      });
-      return this;
-    },
-
-    prepend: function() {
-      var args = arguments;
-      pl.each(this.elements, function() {
-        pl.innerContent.edge(this, args, true, -1, function(o, a){
-          o.insertBefore(a, o.firstChild);
-        });
-      });
-      return this;
-    },
-   
-    appendTo: function(selector, context, index) {
-      pl.each(this.elements, function() {
-        pl(selector, context, index).append(this);
-      });
-      return this;
-    },
-    
-    prependTo: function(selector, context, index) {
-      pl.each(this.elements, function() {
-        pl(selector, context, index).prepend(this);
       });
       return this;
     }
@@ -1472,6 +1330,159 @@
   
 })();
 
+/* Module: Insert.js
+ * Requirements: Core.js, Manipulate.js
+**/
+
+(function() {
+  
+  pl.extend({
+    innerText: pl.browser('ie') ? 'innerText' : 'textContent',
+        
+    innerContent: {
+      midst: function(e, method, ins, to) {
+        var init = e;
+        var e = init.elements[0];
+
+        if(pl.type(ins, u)) {
+          return e[method];
+        } else {
+          if(pl.type(ins, 'obj')) {
+            var temp = doc.createElement('div');
+            temp.appendChild(ins);
+            ins = temp.innerHTML;
+          }
+              
+          pl.each(init.elements, function() {
+            if(!to) {
+              this[method] = ins;
+            } else if(~to) {
+              this[method] += ins;
+            } else {
+              this[method] = ins + this[method];
+            }
+          });
+          return init;
+        }
+      },
+          
+      edge: function(_this, args, table, dir, fn) {
+        var a = pl.clean(args);
+        for(var i = (dir < 0 ? a.length - 1 : 0); i != (dir < 0 ? dir : a.length); i += dir) {
+          fn(_this, a[i]);
+        }
+      }
+    },
+    
+    clean: function(a) {
+      var r = [];
+      var len = a.length;
+      
+      for(var i = 0; i < len; ++i) {
+        if(pl.type(a[i], 'str')) {         
+          var table = '';
+    
+          if(!a[i].indexOf('<thead') || !a[i].indexOf('<tbody')) {
+            table = 'thead';
+            a[i] = '<table>' + a[i] + '</table>';
+          } else if(!a[i].indexOf('<tr')) {
+            table = 'tr';
+            a[i] = '<table>' + a[i] + '</table>';
+          } else if(!a[i].indexOf('<td') || !a[i].indexOf('<th')) {
+            table = 'td';
+            a[i] = '<table><tbody><tr>' + a[i] + '</tr></tbody></table>';
+          }
+    
+          var div = doc.createElement('div');
+          div.innerHTML = a[i];
+    
+          if(table) {
+            div = div.firstChild;
+            if(table !== 'thead') div = div.firstChild;
+            if(table === 'td') div = div.firstChild;
+          }
+
+          var cn_len = div.childNodes.length;
+          for(var j = 0; j < cn_len; ++j) {
+            r.push(div.childNodes[j]);
+          }
+        } else if(a[i] !== n) {
+          r.push(a[i].nodeType ? a[i] : doc.createTextNode(a[i].toString()));
+        }
+      }
+      
+      return r;
+    }
+  });
+  
+  pl.extend(pl.fn, {
+    html: function(ins, to) {
+      // Delegate to the common method
+      return pl.innerContent.midst(this, 'innerHTML', ins, to);
+    },
+    
+    text: function(ins, to) {
+      // The same as in pl().html()
+      return pl.innerContent.midst(this, pl.innerText, ins, to);
+    },
+    
+    after: function() {
+      var args = arguments;
+      pl.each(this.elements, function() {
+        pl.innerContent.edge(this, args, false, -1, function(o, a) {
+          o.parentNode.insertBefore(a, o.nextSibling);
+        });
+      });
+      return this;
+    },
+    
+    before: function() {
+      var args = arguments;
+      pl.each(this.elements, function() {
+        pl.innerContent.edge(this, args, false, 1, function(o, a) {
+          o.parentNode.insertBefore(a, o);
+        });
+      });
+      return this;
+    },
+        
+    append: function() {
+      var args = arguments;
+      pl.each(this.elements, function() {
+        pl.innerContent.edge(this, args, true, 1, function(o, a) {
+          o.appendChild(a);
+        });
+      });
+      return this;
+    },
+
+    prepend: function() {
+      var args = arguments;
+      pl.each(this.elements, function() {
+        pl.innerContent.edge(this, args, true, -1, function(o, a){
+          o.insertBefore(a, o.firstChild);
+        });
+      });
+      return this;
+    },
+   
+    appendTo: function(selector, context, index) {
+      pl.each(this.elements, function() {
+        pl(selector, context, index).append(this);
+      });
+      return this;
+    },
+    
+    prependTo: function(selector, context, index) {
+      pl.each(this.elements, function() {
+        pl(selector, context, index).prepend(this);
+      });
+      return this;
+    }
+  });
+  
+})();
+
 /* Module: Visibility.js
  * Requirements: Core.js, Manipulate.js, Css.js
 **/
@@ -1724,18 +1735,7 @@
 **/
 
 (function(win, doc, undefined) {
-  
-  /* NOTE:
-   * this.elements (in pl() instance) always exists, so checking if this.elements equals true
-   * is senseless, it will be always true. Much better will be checking if it's empty or 
-   * trying to compare the first element with false values (false, null, undefined).
-   * 
-   * Examples:
-   * this.elements[0] || ...
-   * pl.empty(this.elements)
-   * this.elements[0] !== undefined
-  **/
-  
+    
   pl.extend({
     selectedBy: function(elem, selector) {
       var elems = pl(selector).get();
@@ -1802,6 +1802,18 @@
       });
       return this;
     },
+
+    rev: function() {
+      var nodes = [];
+      var len = this.elements.length;
+
+      for(var key = len - 1; key >= 0; --key) {
+        nodes.push(this.elements[key]);
+      }
+
+      this.elements = nodes;
+      return this;
+    },
     
     empty: function() {
       return pl(this.elements).html('');
@@ -1815,7 +1827,7 @@
     val: function(insert) {
       if(!pl.type(insert, 'undef')) {
         pl.each(this.elements, function() {
-          if(pl(this).tag('textarea')) {
+          if(pl(this).tag('textarea') || pl.empty(insert)) {
             this.value = insert;
           } else {
             this.setAttribute('value', insert);
@@ -1895,7 +1907,7 @@
   pl.extend(pl.fn, {
     trigger: function(evt) {
       var event;
-      if (document.createEvent) {
+      if(document.createEvent) {
         event = document.createEvent('HTMLEvents');
         event.initEvent(evt, true, true);
       } else {
@@ -1904,13 +1916,16 @@
       }
 
       event.eventName = evt;
-      var element = this.elements[0];
 
-      if (document.createEvent) {
-        element.dispatchEvent(event);
-      } else {
-        element.fireEvent(event.eventType, event);
-      }
+      pl.each(this.elements, function(k, v) {
+        if(document.createEvent) {
+          v.dispatchEvent(event);
+        } else {
+          v.fireEvent(event.eventType, event);
+        }
+      });
+
+      return this;
     }
   });
   
