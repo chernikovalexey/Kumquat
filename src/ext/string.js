@@ -18,7 +18,7 @@
     
     // Replace unrendered html entities with their rendered variants
     acquireHtml: function(str) {
-      return ke.ext.html.stripTags(str)
+      return str
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .replace(/&amp;/g, '&');
@@ -36,7 +36,7 @@
     
     // Execute scripts from the given string
     execScripts: function(str) {
-      pl.each(ke.ext.html.getScripts(str), function(k, script) {
+      pl.each(ke.ext.string.getScripts(str), function(k, script) {
         window.eval(script);
       });
     },
