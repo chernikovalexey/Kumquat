@@ -1,16 +1,16 @@
 #How to use Kumquat?
 
 All html files are in `/pages/`. It's separated into two directories: `internal` and `public`. The first one stores
-html, related to background processes, the second stores all public files, which will be available from the browser. 
-Js files for this pages are in `/src/hub/`. Js is separated into three files: router, render, handlers.
+html, related to background processes, the second one stores all public files, which will be available from the browser. 
+JS files for this pages are in `/src/hub/`. JS is separated into three files: router, render, handlers.
 
 __For example:__
 
-We've create a new hub with the command line. Now we have a `window` page (`/pages/public/window.html`). 
+We've created a new hub from the command line. Now we have a `window` page (`/pages/public/window.html`). 
 When you transit to this page, Kumquat automatically loads all necessary js 
-(router.js, render.js, handlers.js) from `/src/hub/window/`. By the way, it's no matter whether page is internal or 
-public, the only difference is that you can't create internal pages through the command line (there're a part of core). 
-Then, after all js files loaded, Kumquat loads "import files" (js or css which is required for current page), it's 
+(router.js, render.js, handlers.js) from `/src/hub/window/` and all necessary styles (main.css, window.css) from `/resources/styles/`. By the way, it's no matter whether the page is internal or 
+public, the only difference is that you can't create internal pages through the command line (there're a part of the core). 
+Then, after all JS files loaded, Kumquat loads "import files" (js or css which is required for the current page), it's 
 possible to declare it in router.js (read further about its structure).
 
 ---

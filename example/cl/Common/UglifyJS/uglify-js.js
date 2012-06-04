@@ -1,0 +1,1 @@
+function uglify(a,b){b||(b={});var c=uglify.parser,d=uglify.uglify,e=c.parse(a,b.strict_semicolons);e=d.ast_mangle(e,b.mangle_options),e=d.ast_squeeze(e,b.squeeze_options);var f=d.gen_code(e,b.gen_options);return f}uglify.parser=require("./lib/parse-js"),uglify.uglify=require("./lib/process"),module.exports=uglify

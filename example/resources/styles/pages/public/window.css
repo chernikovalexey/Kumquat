@@ -1,0 +1,25 @@
+#wrapper {
+	width: 200px;
+	font-family: Tahoma
+}
+
+	.selected-indicator {
+		font-weight: 700;
+		font-size: 14px;
+		border-bottom: 1px solid #DDD
+	}
+
+	.items {
+		margin-top: 10px
+	}
+
+		.item {
+			min-width: 25px;
+			display: inline-block
+			
+		}
+
+			.item:hover {
+				cursor: pointer;
+				color: red
+			}

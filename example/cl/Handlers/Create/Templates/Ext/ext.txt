@@ -1,0 +1,11 @@
+/* Kumquat Extension - %Name%
+ * 
+**/
+
+(function(undefined) {
+  
+  pl.extend(ke.ext.%name%, {
+    import: []
+  });
+  
+})();
