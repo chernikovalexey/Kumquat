@@ -1,7 +1,7 @@
 #Kernel
 
-Apart file structure and command line API, Kumquat also suggests you all 
-[functions of Prevel](https://github.com/chernikovalexey/Prevel/tree/master/Docs) available in any part of 
+Apart the file structure and Command Line API, Kumquat also suggests you all 
+[functions of Prevel Library](https://github.com/chernikovalexey/Prevel/tree/master/Docs) available in any part of 
 the extension. Moreover, Kumquat Kernel offers a few useful and convenient APIs to work with Web SQL DB, 
 cache and so on.
 
@@ -9,19 +9,19 @@ cache and so on.
 
 ###Import
 
-__Import `ke.import(url[, files])`:__
+__Import `ke.import(path[, files])`:__
 
 It provides importing scripts and styles. 
 
-You do not need to specify entire pathes, `ke.import()` automatically adds start of the path 
-(/src/ for scripts and /resources/styles/ for styles) and its extension to `url`. 
+You do not need to specify entire pathes, `ke.import()` automatically adds the beginning of the path 
+(/src/ for scripts and /resources/styles/ for styles) and its extension to `path`. 
 So, it will transform "ext.tpl" into "/src/ext/tpl.js", and "s:pages.internal.content" into 
 "/resources/styles/pages/internal/content.css".
 
-`url` is a path to required file. If it starts with "s:", import will consider it as style, otherwise as script.
-Instead of slashes ("/") in url it's necessary to use points.
+`path` is a path to required file. If it starts with "s:", import will consider it as a style, otherwise as a script.
+Instead of slashes ("/") in path it's necessary to use dots.
 
-`files` is an optional argument. It's required when you specify `url` in the following way: `hub.window.*` - when
+`files` is an optional argument. It's required when you specify `path` in the following way: `hub.window.*`; when
 after the last dot there is "*" sign. Thereby `files` is an array, contains name of files which are in directory
 (considering the example: `hub/window/`).
 
@@ -53,8 +53,8 @@ ke.import('ext.tpl')
 
 __When done callback `ke.import().onDone(callback)`:__
 
-`onDone` is a method of `ke.import()`, it's optional. `callback` will be fired when everything specified in 
-import is loaded.
+`onDone` is a method of `ke.import()`, it's optional. `callback` will be fired when everything, specified in 
+import, is loaded.
 
 __Examples:__
 
@@ -92,13 +92,13 @@ It has two public properties: `ke.data.kernel` and `ke.data.app`.
 The second one (`ke.data.app`) is absolutely empty and it's aimed on using in hubs for storing arbitatry information.
 The first one is much complicated, it consists of the following properties:
 
-* `const` - constants. Now there are only 4: STYLE_PREFIX (equals to "s:"), 
+* `const` — constants. Now there are only 4: STYLE_PREFIX (equals to "s:"), 
             ROOT_PREFIX (equals to "root:"), KERNEL_DB (equals to "KE_Kernel") and CACHE_TABLE (equals to "Cache");
 
-* `flags` - flags. Initially there is the only flag - `dom_loaded`, which equals true after DOM Loaded. You can also
+* `flags` — flags. Initially there is the only flag — `dom_loaded`, which equals true after DOM Loaded. You can also
             create flags manually (read further about this feature);
 
-* `info` - current page and browser information. Has 4 properties: `url` (current url), `ver` (Chrome version),
+* `info` — current page and browser information. Has 4 properties: `url` (current url), `ver` (Chrome version),
            `lang` (Chrome interface language), `id` (extension id).
 
 __Examples:__
@@ -117,28 +117,28 @@ console.log(ke.data.kernel.info.lang); // => 'en-GB'
 
 __Current section `ke.section`:__
 
-It's a [getter](http://ejohn.org/blog/javascript-getters-and-setters/), which contains current section (
+It's a [getter](http://ejohn.org/blog/javascript-getters-and-setters/), which contains current section's (
 name of the current html file without its extension).
 
 E.g. for page "chrome-extension://extension_id/pages/public/window.html" section equals to "window".
 
 __Extension ID `ke.extId`:__
 
-It's a getter, too. It contains extension's id (each Chrome extension has id).
+It's a getter, as well. It contains extension's id (each Chrome extension has id).
 
 __Path to extension `ke.pathToExt`:__
 
-Getter. It contains path to the extension. It's useful, if `chrome.extension.getURL` is not suitable to you.
+Getter. It contains path to the extension. It's useful, if `chrome.extension.getURL` is not suitable for you.
 
 __Get flag contents by its name `ke.getFlag(name)`:__
 
-Get `name` flag's contents (true or false).
+Get `name` flag's content (true or false).
 
 __Create a new flag `ke.createFlag(name[, default_value])`:__
 
 It creates a new flag, if it does not exist. 
 
-`name` - name of a new flag. `default_value` - boolean value of just-created flag, by default it's false.
+`name` — name of a new flag. `default_value` — boolean value of just-created flag, by default it's false.
 
 ```javascript
 console.log(ke.getFlag('is_chrome')); // => undefined
@@ -148,7 +148,7 @@ console.log(ke.getFlag('is_chrome')); // => true
 
 __Set flag to true `ke.setFlagTrue(name)`:__
 
-Sets `name` flag to true.
+Turns `name` flag to true.
 
 ```javascript
 ke.createFlag('is_chrome');
@@ -159,7 +159,7 @@ console.log(ke.getFlag('is_chrome')); // => true
 
 __Set flag to false `ke.setFlagFalse(name)`:__
 
-Sets `name` flag to false.
+Turns `name` flag to false.
 
 ```javascript
 ke.createFlag('is_opera', true);
@@ -180,17 +180,17 @@ console.log(ke.getConst('STYLE_PREFIX')); // => 's:'
 
 ###Kumquat DB (`ke.db`)
 
-Convenient API which wraps standard Web SQL DB API, adding a few methods.
+Convenient API, which wraps standard Web SQL DB API, and adds a few new methods.
 
 __Choose the database to work with `ke.db.choose(name[, size])`:__
 
-It chooses the database for future working. It the database doesn't exist, it creates the database.
+It chooses the database for the future working. If the database doesn't exist, it creates the database.
 
-Note: before using other methods of `ke.db` you should obligatorly choose the database.
+__Note:__ before using other methods of `ke.db` you should obligatorly choose the database.
 
 __Selected database `ke.db.selected`:__
 
-Getter. Contains the name of the selected database (chose using the previously described method).
+Getter. Contains the name of the selected database (chosen using the aforesaid method).
 
 ```javascript
 ke.db.choose('test_db');
@@ -200,11 +200,11 @@ console.log(ke.db.selected); // => 'test_db'
 __ke.db.execSql(req, replace, success, error):__
 
 This method executes `req` for selected database (using `ke.db.choose()`). If necessary, it can replace "?" signs in
-`req` to values in `replace` array accordingly. `success` and `error` are callbacks which will be fired on success
+`req` to values in `replace` array accordingly. `success` and `error` are callbacks, which will be fired on success
 and on error of the request accordingly.
 
 ```javascript
-ke.db.choose('test_db', '50 MB'); // Size of db equlals 50 MB
+ke.db.choose('test_db', '50 MB'); // Size of db equals 50 MB
 console.log(ke.db.selected); // => 'test_db'
 
 // Execute this SQL merely for 'test_db' database
@@ -230,15 +230,15 @@ ke.db.execSql(
 
 ###Kumquat User-Storage (`ke.us`)
 
-JavaScript Object based storage with wealthy API. You're able to create lots of storages for further manipulations.
+JavaScript Object-based storage with wealthy API. You're able to create lots of storages for further manipulations.
 
 __ke.us.choose(name):__
 
-Defaultly selected storage is "" - with empty name.
+By default selected storage is "" - with the empty name.
 
 Selects the storage with name `name` for further manipulations, but in contrast `ke.db` API 
 here it's optional, so if you don't choose storage at first, other methods will work with default 
-storage (named "" - empty). If it does not exist, creates a new one, named `name`.
+storage (named "" — empty). If it does not exist, creates a new one, named `name`.
 
 ```javascript
 ke.us.choose('obj_storage');
@@ -246,7 +246,7 @@ ke.us.choose('obj_storage');
 
 __ke.us.chooseDefault():__
 
-Chooses the default storage (named "" - empty name). It is chosen by default (before all changings).
+Chooses the default storage (named "" — empty name). It is chosen by default (before all changes).
 
 __ke.us.choosePrev():__
 
@@ -261,7 +261,7 @@ ke.us.choosePrev(); // current storage is 'test_db' again
 __ke.us.push([name, ]msg):__
 
 It adds `msg` to the end of the current storage 
-(actually, storage is array because of requirement to store lots of values). You can also define `name`, then it will
+(actually, storage is an array because of requirement to store lots of values). You can also define `name`, then it will
 add `msg` to storage named `name` (if `name` storage does not exist, it will be created) instead of the current.
 
 ```javascript
@@ -287,13 +287,13 @@ __ke.us.pop([name]):__
 It returns the last element of the current storage. If `name` is defined, returns the last element of storage named 
 `name`.
 
-Note: after returning it DELETES returned element from the storage.
+__Note:__ after returning it DELETES the returned element from the storage.
 
 ```javascript
 ke.us.choose('test_storage');
-ke.us.unshift('Lingua ');
-ke.us.push('latina');
-console.log(ke.us.pop()); // => 'latina'
+ke.us.unshift('lingua ');
+ke.us.push('Latina');
+console.log(ke.us.pop()); // => 'Latina'
 
 ke.us.push('new_storage', 'Text.');
 console.log(ke.us.pop('new_storage')); // => 'Text.'
@@ -304,13 +304,13 @@ __ke.us.shift([name]):__
 It returns the first element of the current storage. If `name` is defined, returns the first element of storage named
 `name`.
 
-Note: after returning it DELETES returned element from the storage.
+__Note:__ after returning it DELETES the returned element from the storage.
 
 ```javascript
 ke.us.choose('test_storage');
-ke.us.unshift('Lingua ');
-ke.us.push('latina');
-console.log(ke.us.shift()); // => 'Lingua '
+ke.us.unshift('lingua ');
+ke.us.push('Latina');
+console.log(ke.us.shift()); // => 'lingua '
 
 ke.us.push('new_storage', 'Text.');
 console.log(ke.us.shift('new_storage')); // => 'Text.'
@@ -318,10 +318,10 @@ console.log(ke.us.shift('new_storage')); // => 'Text.'
 
 __ke.us.get([name, ]position):__
 
-It returns element which is on position #`position` (starts from 0) from the current storage. If `name` is defined,
-it will return element which is on position #`position` from storage named `name`.
+It returns element which is on the position #`position` (starts from 0) from the current storage. If `name` is defined,
+it will return the element which is on the position #`position` from the storage, named `name`.
 
-`position` can be equaled to "last" or "first", if it's necessary to get the last of first element accordingly, 
+`position` can be equaled to "last" or "first", if it's necessary to get the last or the first element accordingly, 
 otherwise it's number (e.g. `ke.us.get(2)`).
 
 Note: it DOES NOT delete anything after returning, in contrast `ke.us.pop()`/`ke.us.shift()`.
@@ -423,8 +423,8 @@ ke.cache.each(function(name, value, id, time) {
 
 __ke.cache.get(id, callback):__
 
-It selects all element with id equals `id` (or name equals `id`, if `id` is a string) and fires `fn` function an
-argument represented by array contains selected objects.
+It selects all elements with id equals `id` (or name equals `id`, if `id` is a string) and fires `fn` function an
+argument represented by an array contains selected objects.
 
 ```javascript
 ke.cache.save('TODO', 'Test');

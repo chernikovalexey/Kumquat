@@ -2,9 +2,9 @@
 
 __Kumquat__ is a framework aimed on fast extensions developing for __Google Chrome__. Using it you can focus on primary tasks, 
 such as describing extension's appearance and behaviour, instead of sorting out with the file structure, routers and so on.
-Literally, sorting out with the file system is unnecessary - Kumquat has a __Command Line API__, where it's possible to
+Literally, sorting out with the file system is unnecessary — Kumquat has a __Command Line API__, where it's possible to
 create, remove modules, build extension, minify files. The other convenient side of its using is the amount of built-in
-functions and methods: __[Prevel API](https://github.com/chernikovalexey/Prevel/tree/master/Docs)__ is available, plus 
+functions and methods: __[Prevel Library API](https://github.com/chernikovalexey/Prevel/tree/master/Docs)__ is available, plus 
 there're [a few extensions](https://github.com/chernikovalexey/Kumquat/tree/master/src/ext) (they are optional to load).
 
 ###Command Line API
@@ -15,7 +15,7 @@ create a new module or an extension (Kumquat Kernel Extension, had in mind); and
 within Command Line. Moreover, it supports building the project and minifying JavaScript 
 (with __[UglifyJS](https://github.com/mishoo/UglifyJS)__).
 
-__How-to create new module example:__
+__How-to create a new module (example):__
 
 ```
 cd path/to/Kumquat/cl

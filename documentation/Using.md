@@ -6,8 +6,8 @@ JS files for this pages are in `/src/hub/`. JS is separated into three files: ro
 
 __For example:__
 
-We've created a new hub from the command line. Now we have a `window` page (`/pages/public/window.html`). 
-When you transit to this page, Kumquat automatically loads all necessary js 
+We've created a new hub from the Command Line. Now we have a `window` page (`/pages/public/window.html`). 
+When you transit to this page, Kumquat automatically loads all necessary JS 
 (router.js, render.js, handlers.js) from `/src/hub/window/` and all necessary styles (main.css, window.css) from `/resources/styles/`. By the way, it's no matter whether the page is internal or 
 public, the only difference is that you can't create internal pages through the command line (there're a part of the core). 
 Then, after all JS files loaded, Kumquat loads "import files" (js or css which is required for the current page), it's 
