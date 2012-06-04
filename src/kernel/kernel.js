@@ -249,7 +249,7 @@
   pl.extend(ke.data.kernel.info, {
     section: ke.data.kernel.info.url.match('chrome-extension://') ? 
       ke.data.kernel.info.url.match(/([A-z0-9]+)\.html/)[1] : 
-      'content'
+      window.KumquatSection || 'content'
   });
 
   /*
@@ -352,7 +352,7 @@
 
       // Styles
       if(ke.section !== 'background') {
-        var path = (ke.section === 'content' ? 'internal' : 'public') + '.' + ke.section;
+        var path = (ke.section === 'content' || ke.section === window.KumquatSection ? 'internal' : 'public') + '.' + ke.section;
         ke.import('s:pages.common.main');
         ke.import('s:pages.' + path);
       }
@@ -364,6 +364,10 @@
       
     getImage: function(n) {
       return this.getResource('images/' + n + '.png');
+    },
+
+    getInternalPage: function(n) {
+      return '/pages/internal/' + n + '.html';
     },
       
     proccessCall: function() {
@@ -454,20 +458,16 @@
     choose: function(name, size) {
       ke.data.db.current = name;
       size = parseSize(size) || 5 * Math.pow(1024, 2);
-            
-      if(!ke.data.db.list.__lookupGetter__(name)) {
-        ke.data.db.list.__defineGetter__(name, function() {
-          var db = openDatabase(name, '1.0.0', name + ' database', size);
-          
-          if(!db) {
-            pl.error('Could not connect to the database.');
-          }
-          
-          return db;
-        });
+
+      if(!ke.data.db.list[name]) {
+        ke.data.db.list[name] = openDatabase(name, '1.0.0', name + ' database', size);
+
+        if(!ke.data.db.list[name]) {
+          pl.error('Could not connect to the database.');
+        }
       }
-      
-      ke.data.db.list[name];
+
+      return ke.data.db.list[name];
     },
     
     get selected() {
