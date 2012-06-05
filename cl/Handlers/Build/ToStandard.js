@@ -4,6 +4,7 @@
   var updated = (
     'icons,browser_action,page_action,background_page,options_page,content_scripts'
   ).split(',');
+  var withMerge = 'js,css'.split(','); // Predominantly, for `content_scripts`
   var by_once = {
     browser_action: 0,
     page_action: 0
@@ -17,6 +18,9 @@
     icon: function(name) {
       var resolution = name.match(/(\.)+([a-z]+){3}/) ? '' : '.png';
       return '/resources/images/icons/' + name + resolution;
+    },
+    default_icon: function(n) {
+      return this.icon(n);
     },
     16: function(n) {
       return this.icon(n);
@@ -57,7 +61,13 @@
         if(Array.isArray(o)) {
           o[key] = detailedReview(o[key]);
         } else {
-          o[key] = transforms[key](o[key]);
+          var tmp;
+          if(Array.isArray(o[key])) {
+            tmp = transforms[key](o[key][0]).concat(o[key].splice(1, o[key].length));
+          } else {
+            tmp = transforms[key](o[key]);
+          }
+          o[key] = tmp;
         }
       }
     }
@@ -101,12 +111,6 @@
       if(Common.isEmpty(standard[key]) || (any > 1 && key in by_once)) {
         delete standard[key];
       }
-    }
-    
-    if(connected._locales > 0 && connected.default_locale === 0) {
-      delete standard._locales;
-    } else if(connected._locales === 0 && connected.default_locale > 0) {
-      delete standard.default_locale;
     }
     
     Log.log('log 2', 'OK.');
