@@ -120,7 +120,6 @@
       var root = src.substring(0, 5) === ke.getConst('ROOT_PREFIX');
       
       src = ke.import.addRes( ke.import.parseType(src) );
-      // console.log(ke.import.parseType(src), ke.import.addRes( ke.import.parseType(src) ));
       
       if(pl.type(sub, 'undef')) {
         var parts = src.split('/');
@@ -346,16 +345,16 @@
           if(pl.empty(ready)) {
             clearInterval(int);
             ke.app.init();
+
+            // Styles
+            if(ke.section !== 'background') {
+              var path = (ke.section === 'content' || ke.section === window.KumquatSection ? 'internal' : 'public') + '.' + ke.section;
+              ke.import('s:pages.common.main');
+              ke.import('s:pages.' + path);
+            }
           }
         }, 1);
       });
-
-      // Styles
-      if(ke.section !== 'background') {
-        var path = (ke.section === 'content' || ke.section === window.KumquatSection ? 'internal' : 'public') + '.' + ke.section;
-        ke.import('s:pages.common.main');
-        ke.import('s:pages.' + path);
-      }
     },
 
     getResource: function(p) {
