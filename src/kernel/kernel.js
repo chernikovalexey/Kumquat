@@ -233,7 +233,7 @@
       
       info: {
         url: doc.location.href,
-        ver: navigator.appVersion.match('Chrome/([0-9\.]+)')[1],
+        ver: navigator.appVersion.match('Chrome/([0-9\.]+)') ? navigator.appVersion.match('Chrome/([0-9\.]+)')[1] : false,
         lang: navigator.language,
         id: chrome.i18n.getMessage('@@extension_id')
       },
